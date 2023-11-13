@@ -1,2 +1,0 @@
-Joao,261341900,joaozinho@gmail.com,couves,false
-Tiago,261341901,tiago@isec.pt,alface,true
