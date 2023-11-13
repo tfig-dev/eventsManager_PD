@@ -6,10 +6,8 @@ public class Client {
     public static final int TIMEOUT = 10;
 
     public static void main(String[] args) {
-
         InetAddress serverAddr;
         int serverPort;
-        String response;
 
         if (args.length != 2) {
             System.out.println("Sintaxe: java Cliente serverAddress serverPort");
@@ -21,25 +19,24 @@ public class Client {
             serverPort = Integer.parseInt(args[1]);
 
             try (Socket socket = new Socket(serverAddr, serverPort)) {
-                socket.setSoTimeout(TIMEOUT * 1000);
                 Scanner scanner = new Scanner(System.in);
 
+                Thread responseThread = new Thread(new ResponseHandler(socket));
+                responseThread.start();
+
                 while (true) {
-                    System.out.print("Enter a command (type 'exit' to quit): ");
                     String userInput = scanner.nextLine();
 
-                    if (userInput.equalsIgnoreCase("exit")) {
+                    if (userInput.equals("3")) {
                         break;
                     }
 
                     PrintStream pout = new PrintStream(socket.getOutputStream());
                     pout.println(userInput);
                     pout.flush();
-
-                    BufferedReader bin = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                    response = bin.readLine();
-                    System.out.println("Server output: " + response);
                 }
+
+                responseThread.join();
 
                 scanner.close();
             }
@@ -53,6 +50,30 @@ public class Client {
             System.out.println("Ocorreu um erro ao nível do socket TCP:\n\t" + e);
         } catch (IOException e) {
             System.out.println("Ocorreu um erro no acesso ao socket:\n\t" + e);
+        } catch (InterruptedException e) {
+            System.out.println("Thread interrupted:\n\t" + e);
+        }
+    }
+
+    static class ResponseHandler implements Runnable {
+        private Socket socket;
+
+        public ResponseHandler(Socket socket) {
+            this.socket = socket;
+        }
+
+        @Override
+        public void run() {
+            try {
+                BufferedReader bin = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                String response;
+
+                while ((response = bin.readLine()) != null) {
+                    System.out.println(response);
+                }
+            } catch (IOException e) {
+                System.out.println("Error handling server response:\n\t" + e);
+            }
         }
     }
 }

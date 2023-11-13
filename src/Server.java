@@ -51,6 +51,7 @@ public class Server {
                  PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
 
                 String receivedMsg;
+                printMenu(pout);
 
                 while ((receivedMsg = bin.readLine()) != null) {
                     System.out.println("Received: " + receivedMsg);
@@ -86,11 +87,11 @@ public class Server {
         }
     }
 
-    private void printMenu() {
-        //Barebones
-        System.out.println("1 - Login");
-        System.out.println("2 - Register");
-        System.out.println("3 - Exit");
+    private static void printMenu(PrintStream pout) {
+        pout.println("1 - Login");
+        pout.println("2 - Register");
+        pout.println("3 - Exit");
+        pout.flush();
         //TODO - Different menus for different type of user (Admin / User)
     }
 }
