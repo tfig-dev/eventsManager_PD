@@ -4,15 +4,12 @@ public class User {
     private String email;
     private String password;
     private boolean isAdmin;
-    private boolean isLoggedIn;
-
     public User(String name, int identificationNumber, String email, String password, boolean isAdmin) {
         this.name = name;
         this.identificationNumber = identificationNumber;
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
-        this.isLoggedIn = false;
     }
 
     public User(String name, int identificationNumber, String email, String password) {
@@ -21,7 +18,6 @@ public class User {
         this.email = email;
         this.password = password;
         this.isAdmin = false;
-        this.isLoggedIn = false;
     }
 
     // Getters and setters for the attributes
@@ -67,19 +63,6 @@ public class User {
         return name + "," + identificationNumber + "," + email + "," + password + "," + isAdmin;
     }
 
-    public boolean authenticate(String inputEmail, String inputPassword) {
-        if(email.equals(inputEmail) && password.equals(inputPassword)) {
-            isLoggedIn = true;
-        }
-        return isLoggedIn;
-    }
-
-    public void logout() {
-        if(isLoggedIn) {
-            isLoggedIn = false;
-        }
-    }
-
     public String getUsername() {
         return name;
     }
@@ -90,13 +73,5 @@ public class User {
 
     public void setAdmin(boolean admin) {
         isAdmin = admin;
-    }
-
-    public boolean isLoggedIn() {
-        return isLoggedIn;
-    }
-
-    public void setLoggedIn(boolean loggedIn) {
-        isLoggedIn = loggedIn;
     }
 }

@@ -41,46 +41,19 @@ public class Server {
 
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
-        User loggedUser;
+        private User loggedUser;
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
+            this.loggedUser = null;
         }
-
-        @Override
-        public void run() {
-            try (BufferedReader bin = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                 PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
-
-                String receivedMsg;
-                printMenu(pout, loggedUser);
-
-                while ((receivedMsg = bin.readLine()) != null) {
-                    System.out.println("Received: " + receivedMsg);
-                    inputMenu(bin, receivedMsg, pout, loggedUser);
-                    printMenu(pout, loggedUser);
-                }
-            } catch (IOException e) {
-                System.err.println("Communication error with the client: " + e);
-            } finally {
-                try {
-                    clientSocket.close();
-                    System.out.println("Cliente desconectado: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort());
-                } catch (IOException e) {
-                    System.err.println("Error closing the client socket: " + e);
-                }
+        private void printMenu(PrintStream pout) {
+            if(loggedUser == null) {
+                pout.println("1 - Login");
+                pout.println("2 - Register");
+                pout.println("3 - Exit");
             }
-        }
-    }
-
-    private static void printMenu(PrintStream pout, User loggedUser) {
-        if(loggedUser == null) { //NOT LOGGED IN
-            pout.println("1 - Login");
-            pout.println("2 - Register");
-            pout.println("3 - Exit");
-        }
-        else {
-            if(!loggedUser.isAdmin()) {
+            else if(!loggedUser.isAdmin()) {
                 pout.println("1 - Edit Account Details");
                 pout.println("2 - Input Event Code");
                 pout.println("3 - See past participations");
@@ -102,46 +75,74 @@ public class Server {
                 pout.println("12 - Add Participant to event");
                 pout.println("13 - Logout");
             }
-        }
-        pout.flush();
-    }
 
-    private static void inputMenu(BufferedReader bin, String receivedMsg, PrintStream pout, User loggedUser) throws IOException {
-        if(loggedUser == null) {
-            switch(receivedMsg) {
-                case "1":
-                    pout.println("Email = ");
-                    pout.flush();
-                    String email = bin.readLine();
-                    pout.println("Password = ");
-                    pout.flush();
-                    String password = bin.readLine();
-                    if(data.authenticate(email, password)) pout.println("Login successful");
-                    else pout.println("Login failed");
-                    break;
-                case "2":
-                    pout.println("Name = ");
-                    pout.flush();
-                    String name = bin.readLine();
-                    pout.println("Email = ");
-                    pout.flush();
-                    email = bin.readLine();
-                    pout.println("Password = ");
-                    pout.flush();
-                    password = bin.readLine();
-                    pout.println("Identification Number = ");
-                    pout.flush();
-                    int identificationNumber = Integer.parseInt(bin.readLine());
-                    User newUser = new User(name, identificationNumber, email, password);
-                    data.registerUser(newUser);
-                    break;
-                case "3":
-                    break;
-                default:
-                    pout.println("Invalid option");
-                    break;
+            pout.flush();
+        }
+
+        private void inputMenu(BufferedReader bin, String receivedMsg, PrintStream pout) throws IOException {
+            if(loggedUser == null) {
+                switch(receivedMsg) {
+                    case "1":
+                        pout.println("Email = ");
+                        pout.flush();
+                        String email = bin.readLine();
+                        pout.println("Password = ");
+                        pout.flush();
+                        String password = bin.readLine();
+                        loggedUser = data.authenticate(email, password);
+                        if(loggedUser != null) {
+                            pout.println("Login successful");
+                        }
+                        else pout.println("Login failed");
+                        break;
+                    case "2":
+                        pout.println("Name = ");
+                        pout.flush();
+                        String name = bin.readLine();
+                        pout.println("Email = ");
+                        pout.flush();
+                        email = bin.readLine();
+                        pout.println("Password = ");
+                        pout.flush();
+                        password = bin.readLine();
+                        pout.println("Identification Number = ");
+                        pout.flush();
+                        int identificationNumber = Integer.parseInt(bin.readLine());
+                        User newUser = new User(name, identificationNumber, email, password);
+                        data.registerUser(newUser);
+                        break;
+                    case "3":
+                        break;
+                    default:
+                        pout.println("Invalid option");
+                        break;
+                }
+            }
+            pout.flush();
+        }
+
+        @Override
+        public void run() {
+            try (BufferedReader bin = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                 PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
+
+                String receivedMsg;
+                printMenu(pout);
+
+                while ((receivedMsg = bin.readLine()) != null) {
+                    inputMenu(bin, receivedMsg, pout);
+                    printMenu(pout);
+                }
+            } catch (IOException e) {
+                System.err.println("Communication error with the client: " + e);
+            } finally {
+                try {
+                    clientSocket.close();
+                    System.out.println("Cliente desconectado: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort());
+                } catch (IOException e) {
+                    System.err.println("Error closing the client socket: " + e);
+                }
             }
         }
-        pout.flush();
     }
 }

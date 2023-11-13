@@ -1,130 +1,112 @@
 import java.io.*;
+import java.sql.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
 public class Data {
-    private final Set<User> users;
-    private final Set<Event> events;
+    private static Connection connection;
+    private static HashMap<String, User> loggedUsers = new HashMap<>();
 
     public Data() {
-        this.users = new HashSet<>();
-        this.events = new HashSet<>();
-        loadUsers();
-        loadEvents();
+        connect();
+        createTables();
     }
 
-    private void loadEvents() {
-        String filePath = "src/datafiles/events.txt";
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
+    public static void connect(){
+        try {
+            Class.forName("org.sqlite.JDBC");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
 
-                if (parts.length == 5) {
-                    String name = parts[0];
-                    String location = parts[1];
-                    LocalDate date = LocalDate.parse(parts[2]);
-                    LocalTime startTime = LocalTime.parse(parts[3]);
-                    LocalTime endTime = LocalTime.parse(parts[4]);
-
-                    Event event = new Event(name, location, date, startTime, endTime);
-                    events.add(event);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found: " + filePath);
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + filePath);
+        String url = "jdbc:sqlite:src/datafiles/database.db";
+        try {
+            connection = DriverManager.getConnection(url);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
-    private void loadUsers() {
-        String filePath = "src/datafiles/users.txt";
-        try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                if (parts.length == 5) {
-                    String name = parts[0];
-                    String identificationNumber = parts[1];
-                    String email = parts[2];
-                    String password = parts[3];
-                    boolean isAdmin = Boolean.parseBoolean(parts[4]);
-                    User user = new User(name, Integer.parseInt(identificationNumber), email, password, isAdmin);
-                    users.add(user);
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.out.println("File not found: " + filePath);
-        } catch (IOException e) {
-            System.out.println("Error reading file: " + filePath);
+    public static void createTables() {
+        Statement stmt = null;
+
+        try {
+            Class.forName("org.sqlite.JDBC");
+            connection = DriverManager.getConnection("jdbc:sqlite:src/datafiles/database.db");
+
+            stmt = connection.createStatement();
+
+            String users = "CREATE TABLE IF NOT EXISTS USER " +
+                    "(EMAIL INT PRIMARY KEY," +
+                    " NAME TEXT NOT NULL, " +
+                    " PASSWORD TEXT NOT NULL, " +
+                    " NIF CHAR(9) NOT NULL, " +
+                    " ISADMIN INT NOT NULL)";
+            stmt.executeUpdate(users);
+
+            String events = "CREATE TABLE IF NOT EXISTS EVENT " +
+                    "(ID INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    " NAME TEXT NOT NULL," +
+                    " LOCAL TEXT NOT NULL, " +
+                    " DATE TEXT NOT NULL, " +
+                    " BEGINHOUR TEXT NOT NULL, " +
+                    " ENDHOUR TEXT NOT NULL)";
+            stmt.executeUpdate(events);
+            stmt.close();
+        } catch ( Exception e ) {
+            System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+            System.exit(0);
         }
     }
 
-    public Set<User> getUsers() {
-        return this.users;
-    }
+    public User authenticate(String email1, String password1) {
+        String query = "SELECT * FROM USER WHERE EMAIL = ? AND PASSWORD = ?";
 
-    public Set<Event> getEvents() {
-        return this.events;
-    }
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, email1);
+            preparedStatement.setString(2, password1);
 
-    public void addUser(User user) {
-        this.users.add(user);
-    }
+            ResultSet resultSet = preparedStatement.executeQuery();
 
-    public void addEvent(Event event) {
-        this.events.add(event);
-    }
+            if (resultSet.next()) {
+                String email = resultSet.getString("EMAIL");
+                String name = resultSet.getString("NAME");
+                String password = resultSet.getString("PASSWORD");
+                int identificationNumber = resultSet.getInt("NIF");
+                boolean isAdmin = resultSet.getBoolean("ISADMIN");
+                User user = new User(name, identificationNumber, email, password, isAdmin);
 
-    public void removeUser(User user) {
-        this.users.remove(user);
-    }
-
-    public void removeEvent(Event event) {
-        this.events.remove(event);
-    }
-
-    public User getUser(String email) {
-        for (User user : this.users) {
-            if (user.getEmail().equals(email)) {
+                loggedUsers.put(email, user);
                 return user;
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
-
         return null;
     }
 
-    public boolean getUserState(String email) {
-        for (User user : this.users) {
-            if (user.getEmail().equals(email) && user.isLoggedIn()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public boolean authenticate(String email, String password) {
-        for (User user : this.users) {
-            if (user.authenticate(email, password)) return true;
-        }
-        return false;
-    }
-
     public void registerUser(User newUser) {
-        this.users.add(newUser);
-        saveUsers();
+        String insertUserSql = "INSERT INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertUserSql)) {
+            preparedStatement.setString(1, newUser.getEmail());
+            preparedStatement.setString(2, newUser.getName());
+            preparedStatement.setString(3, newUser.getPassword());
+            preparedStatement.setInt(4, newUser.getIdentificationNumber());
+            preparedStatement.setBoolean(5, newUser.isAdmin());
+            preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void saveUsers() {
-        try (FileWriter writer = new FileWriter("src/datafiles/users.txt")) {
-            for (User user : this.users) {
-                writer.write(user.toStringFile() + "\n");
-            }
-        } catch (IOException e) {
-            System.out.println("Error writing to file: " + e.getMessage());
+    public void closeConnection() {
+        try {
+            connection.close();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 }
