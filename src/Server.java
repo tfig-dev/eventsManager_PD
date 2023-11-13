@@ -1,8 +1,8 @@
 import java.io.*;
 import java.net.*;
-import java.util.Calendar;
 
 public class Server {
+    static Data data = new Data();
     public static void main(String[] args) {
         int listeningPort;
 
@@ -25,7 +25,6 @@ public class Server {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Cliente conectado: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort());
-
                     Thread clientThread = new Thread(new ClientHandler(clientSocket));
                     clientThread.start();
                 } catch (IOException e) {
@@ -56,19 +55,21 @@ public class Server {
                 while ((receivedMsg = bin.readLine()) != null) {
                     System.out.println("Received: " + receivedMsg);
 
-                    if (receivedMsg.equalsIgnoreCase("exit")) {
+                    if (receivedMsg.equals("1")) {
+                        pout.println("Email = ");
+                        pout.flush();
+                        String email = bin.readLine();
+                        pout.println("Password = ");
+                        pout.flush();
+                        String password = bin.readLine();
+                        if(data.authenticate(email, password)) pout.println("Login successful");
+                        else pout.println("Login failed");
+                    }
+                    else if(receivedMsg.equals("3")) {
                         break;
                     }
-
-                    if (receivedMsg.equalsIgnoreCase("TIME")) {
-                        Calendar calendar = Calendar.getInstance();
-                        String timeMsg = calendar.get(Calendar.HOUR_OF_DAY) + ":" +
-                                calendar.get(Calendar.MINUTE) + ":" + calendar.get(Calendar.SECOND);
-
-                        pout.println(timeMsg);
-                        pout.flush();
-                    } else {
-                        pout.println("Unknown command");
+                    else {
+                        pout.println("Unknown command / Not Implemented");
                         pout.flush();
                     }
                 }
@@ -83,5 +84,13 @@ public class Server {
                 }
             }
         }
+    }
+
+    private void printMenu() {
+        //Barebones
+        System.out.println("1 - Login");
+        System.out.println("2 - Register");
+        System.out.println("3 - Exit");
+        //TODO - Different menus for different type of user (Admin / User)
     }
 }
