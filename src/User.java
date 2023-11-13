@@ -15,6 +15,15 @@ public class User {
         this.isLoggedIn = false;
     }
 
+    public User(String name, int identificationNumber, String email, String password) {
+        this.name = name;
+        this.identificationNumber = identificationNumber;
+        this.email = email;
+        this.password = password;
+        this.isAdmin = false;
+        this.isLoggedIn = false;
+    }
+
     // Getters and setters for the attributes
 
     public String getName() {
@@ -52,6 +61,10 @@ public class User {
     @Override
     public String toString() {
         return "Name: " + name + "\nIdentification Number: " + identificationNumber + "\nEmail: " + email;
+    }
+
+    public String toStringFile() {
+        return name + "," + identificationNumber + "," + email + "," + password + "," + isAdmin;
     }
 
     public boolean authenticate(String inputEmail, String inputPassword) {

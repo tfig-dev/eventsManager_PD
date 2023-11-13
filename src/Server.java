@@ -3,6 +3,7 @@ import java.net.*;
 
 public class Server {
     static Data data = new Data();
+
     public static void main(String[] args) {
         int listeningPort;
 
@@ -40,7 +41,7 @@ public class Server {
 
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
-        private boolean logged = false;
+        User loggedUser;
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -52,33 +53,12 @@ public class Server {
                  PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
 
                 String receivedMsg;
-                printMenu(pout, logged);
+                printMenu(pout, loggedUser);
 
                 while ((receivedMsg = bin.readLine()) != null) {
                     System.out.println("Received: " + receivedMsg);
-
-                    if (receivedMsg.equals("1") && !logged) {
-                        pout.println("Email = ");
-                        pout.flush();
-                        String email = bin.readLine();
-                        pout.println("Password = ");
-                        pout.flush();
-                        String password = bin.readLine();
-                        if(data.authenticate(email, password)) {
-                            pout.println("Login successful");
-                            logged = true;
-                        }
-                        else pout.println("Login failed");
-
-                        pout.flush();
-                    }
-
-                    else {
-                        pout.println("Unknown command / Not Implemented");
-                        pout.flush();
-                    }
-
-                    printMenu(pout, logged);
+                    inputMenu(bin, receivedMsg, pout, loggedUser);
+                    printMenu(pout, loggedUser);
                 }
             } catch (IOException e) {
                 System.err.println("Communication error with the client: " + e);
@@ -93,16 +73,74 @@ public class Server {
         }
     }
 
-    private static void printMenu(PrintStream pout, boolean logged) {
-        if(!logged) {
+    private static void printMenu(PrintStream pout, User loggedUser) {
+        if(loggedUser == null) { //NOT LOGGED IN
             pout.println("1 - Login");
             pout.println("2 - Register");
             pout.println("3 - Exit");
         }
         else {
-            pout.println("1 - Create Event");
-            pout.println("2 - List Events");
-            pout.println("3 - Exit");
+            if(!loggedUser.isAdmin()) {
+                pout.println("1 - Edit Account Details");
+                pout.println("2 - Input Event Code");
+                pout.println("3 - See past participations");
+                pout.println("4 - Get CSV file");
+                pout.println("4 - Logout");
+            }
+            else {
+                pout.println("1 - Change Admin Account Details");
+                pout.println("2 - Create Event");
+                pout.println("3 - Edit Event");
+                pout.println("4 - Delete Event");
+                pout.println("5 - Check Events");
+                pout.println("6 - Generate Event Code");
+                pout.println("7 - Check Participants");
+                pout.println("8 - Get CSV File");
+                pout.println("9 - Check events by user participation");
+                pout.println("10 - Get CSV File");
+                pout.println("11 - Delete Participant to event");
+                pout.println("12 - Add Participant to event");
+                pout.println("13 - Logout");
+            }
+        }
+        pout.flush();
+    }
+
+    private static void inputMenu(BufferedReader bin, String receivedMsg, PrintStream pout, User loggedUser) throws IOException {
+        if(loggedUser == null) {
+            switch(receivedMsg) {
+                case "1":
+                    pout.println("Email = ");
+                    pout.flush();
+                    String email = bin.readLine();
+                    pout.println("Password = ");
+                    pout.flush();
+                    String password = bin.readLine();
+                    if(data.authenticate(email, password)) pout.println("Login successful");
+                    else pout.println("Login failed");
+                    break;
+                case "2":
+                    pout.println("Name = ");
+                    pout.flush();
+                    String name = bin.readLine();
+                    pout.println("Email = ");
+                    pout.flush();
+                    email = bin.readLine();
+                    pout.println("Password = ");
+                    pout.flush();
+                    password = bin.readLine();
+                    pout.println("Identification Number = ");
+                    pout.flush();
+                    int identificationNumber = Integer.parseInt(bin.readLine());
+                    User newUser = new User(name, identificationNumber, email, password);
+                    data.registerUser(newUser);
+                    break;
+                case "3":
+                    break;
+                default:
+                    pout.println("Invalid option");
+                    break;
+            }
         }
         pout.flush();
     }

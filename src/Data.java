@@ -1,7 +1,4 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.HashSet;
@@ -114,5 +111,20 @@ public class Data {
             if (user.authenticate(email, password)) return true;
         }
         return false;
+    }
+
+    public void registerUser(User newUser) {
+        this.users.add(newUser);
+        saveUsers();
+    }
+
+    private void saveUsers() {
+        try (FileWriter writer = new FileWriter("src/datafiles/users.txt")) {
+            for (User user : this.users) {
+                writer.write(user.toStringFile() + "\n");
+            }
+        } catch (IOException e) {
+            System.out.println("Error writing to file: " + e.getMessage());
+        }
     }
 }

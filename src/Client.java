@@ -3,8 +3,6 @@ import java.io.*;
 import java.util.Scanner;
 
 public class Client {
-    public static final int TIMEOUT = 10;
-
     public static void main(String[] args) {
         InetAddress serverAddr;
         int serverPort;
@@ -27,17 +25,16 @@ public class Client {
                 while (true) {
                     String userInput = scanner.nextLine();
 
-                    if (userInput.equals("3")) {
-                        break;
-                    }
-
                     PrintStream pout = new PrintStream(socket.getOutputStream());
                     pout.println(userInput);
                     pout.flush();
+
+                    if (userInput.equals("3")) {
+                        break;
+                    }
                 }
 
                 responseThread.join();
-
                 scanner.close();
             }
         } catch (UnknownHostException e) {
