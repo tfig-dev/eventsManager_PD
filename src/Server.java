@@ -40,6 +40,7 @@ public class Server {
 
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
+        private boolean logged = false;
 
         public ClientHandler(Socket clientSocket) {
             this.clientSocket = clientSocket;
@@ -51,28 +52,33 @@ public class Server {
                  PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
 
                 String receivedMsg;
-                printMenu(pout);
+                printMenu(pout, logged);
 
                 while ((receivedMsg = bin.readLine()) != null) {
                     System.out.println("Received: " + receivedMsg);
 
-                    if (receivedMsg.equals("1")) {
+                    if (receivedMsg.equals("1") && !logged) {
                         pout.println("Email = ");
                         pout.flush();
                         String email = bin.readLine();
                         pout.println("Password = ");
                         pout.flush();
                         String password = bin.readLine();
-                        if(data.authenticate(email, password)) pout.println("Login successful");
+                        if(data.authenticate(email, password)) {
+                            pout.println("Login successful");
+                            logged = true;
+                        }
                         else pout.println("Login failed");
+
+                        pout.flush();
                     }
-                    else if(receivedMsg.equals("3")) {
-                        break;
-                    }
+
                     else {
                         pout.println("Unknown command / Not Implemented");
                         pout.flush();
                     }
+
+                    printMenu(pout, logged);
                 }
             } catch (IOException e) {
                 System.err.println("Communication error with the client: " + e);
@@ -87,11 +93,17 @@ public class Server {
         }
     }
 
-    private static void printMenu(PrintStream pout) {
-        pout.println("1 - Login");
-        pout.println("2 - Register");
-        pout.println("3 - Exit");
+    private static void printMenu(PrintStream pout, boolean logged) {
+        if(!logged) {
+            pout.println("1 - Login");
+            pout.println("2 - Register");
+            pout.println("3 - Exit");
+        }
+        else {
+            pout.println("1 - Create Event");
+            pout.println("2 - List Events");
+            pout.println("3 - Exit");
+        }
         pout.flush();
-        //TODO - Different menus for different type of user (Admin / User)
     }
 }

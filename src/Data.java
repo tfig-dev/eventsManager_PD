@@ -90,14 +90,23 @@ public class Data {
         this.events.remove(event);
     }
 
-    public User getUser(String username) {
+    public User getUser(String email) {
         for (User user : this.users) {
-            if (user.getUsername().equals(username)) {
+            if (user.getEmail().equals(email)) {
                 return user;
             }
         }
 
         return null;
+    }
+
+    public boolean getUserState(String email) {
+        for (User user : this.users) {
+            if (user.getEmail().equals(email) && user.isLoggedIn()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean authenticate(String email, String password) {
