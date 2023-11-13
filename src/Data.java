@@ -19,7 +19,7 @@ public class Data {
     }
 
     private void loadEvents() {
-        String filePath = "datafiles/events.txt";
+        String filePath = "src/datafiles/events.txt";
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
@@ -44,7 +44,7 @@ public class Data {
     }
 
     private void loadUsers() {
-        String filePath = "datafiles/users.txt";
+        String filePath = "src/datafiles/users.txt";
         try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
             String line;
             while ((line = reader.readLine()) != null) {
