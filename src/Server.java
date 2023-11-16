@@ -47,78 +47,17 @@ public class Server {
             this.clientSocket = clientSocket;
             this.loggedUser = null;
         }
-        private void printMenu(PrintStream pout) {
-            if(loggedUser == null) {
-                pout.println("1 - Login");
-                pout.println("2 - Register");
-                pout.println("3 - Exit");
-            }
-            else if(!loggedUser.isAdmin()) {
-                pout.println("1 - Edit Account Details");
-                pout.println("2 - Input Event Code");
-                pout.println("3 - See past participations");
-                pout.println("4 - Get CSV file");
-                pout.println("4 - Logout");
-            }
-            else {
-                pout.println("1 - Change Admin Account Details");
-                pout.println("2 - Create Event");
-                pout.println("3 - Edit Event");
-                pout.println("4 - Delete Event");
-                pout.println("5 - Check Events");
-                pout.println("6 - Generate Event Code");
-                pout.println("7 - Check Participants");
-                pout.println("8 - Get CSV File");
-                pout.println("9 - Check events by user participation");
-                pout.println("10 - Get CSV File");
-                pout.println("11 - Delete Participant to event");
-                pout.println("12 - Add Participant to event");
-                pout.println("13 - Logout");
-            }
 
-            pout.flush();
+        private void handleInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
+            if(loggedUser == null) notLoggedInUserInput(userInput, bin, pout);
+            else if (!loggedUser.isAdmin()) userInput(userInput, bin, pout);
+            else adminInput(userInput, bin, pout);
         }
 
-        private void inputMenu(BufferedReader bin, String receivedMsg, PrintStream pout) throws IOException {
-            if(loggedUser == null) {
-                switch(receivedMsg) {
-                    case "1":
-                        pout.println("Email = ");
-                        pout.flush();
-                        String email = bin.readLine();
-                        pout.println("Password = ");
-                        pout.flush();
-                        String password = bin.readLine();
-                        loggedUser = data.authenticate(email, password);
-                        if(loggedUser != null) {
-                            pout.println("Login successful");
-                        }
-                        else pout.println("Login failed");
-                        break;
-                    case "2":
-                        pout.println("Name = ");
-                        pout.flush();
-                        String name = bin.readLine();
-                        pout.println("Email = ");
-                        pout.flush();
-                        email = bin.readLine();
-                        pout.println("Password = ");
-                        pout.flush();
-                        password = bin.readLine();
-                        pout.println("Identification Number = ");
-                        pout.flush();
-                        int identificationNumber = Integer.parseInt(bin.readLine());
-                        User newUser = new User(name, identificationNumber, email, password);
-                        data.registerUser(newUser);
-                        break;
-                    case "3":
-                        break;
-                    default:
-                        pout.println("Invalid option");
-                        break;
-                }
-            }
-            pout.flush();
+        private void handleMenu(PrintStream pout) {
+            if(loggedUser == null) notLoggedInMenu(pout);
+            else if (loggedUser.isAdmin()) adminMenu(pout);
+            else userMenu(pout);
         }
 
         @Override
@@ -127,11 +66,12 @@ public class Server {
                  PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
 
                 String receivedMsg;
-                printMenu(pout);
+
+                handleMenu(pout);
 
                 while ((receivedMsg = bin.readLine()) != null) {
-                    inputMenu(bin, receivedMsg, pout);
-                    printMenu(pout);
+                    handleInput(receivedMsg, bin, pout);
+                    handleMenu(pout);
                 }
             } catch (IOException e) {
                 System.err.println("Communication error with the client: " + e);
@@ -143,6 +83,95 @@ public class Server {
                     System.err.println("Error closing the client socket: " + e);
                 }
             }
+        }
+
+        private void notLoggedInMenu(PrintStream pout) {
+            pout.println("1 - Login");
+            pout.println("2 - Register");
+            pout.println("3 - Exit");
+            pout.flush();
+        }
+
+        private void userMenu(PrintStream pout) {
+            pout.println("1 - Edit Account Details");
+            pout.println("2 - Input Event Code");
+            pout.println("3 - See past participations");
+            pout.println("4 - Get CSV file");
+            pout.println("4 - Logout");
+            pout.flush();
+        }
+
+        private void adminMenu(PrintStream pout) {
+            pout.println("1 - Change Admin Account Details");
+            pout.println("2 - Create Event");
+            pout.println("3 - Edit Event");
+            pout.println("4 - Delete Event");
+            pout.println("5 - Check Events");
+            pout.println("6 - Generate Event Code");
+            pout.println("7 - Check Participants");
+            pout.println("8 - Get CSV File");
+            pout.println("9 - Check events by user participation");
+            pout.println("10 - Get CSV File");
+            pout.println("11 - Delete Participant to event");
+            pout.println("12 - Add Participant to event");
+            pout.println("13 - Logout");
+            pout.flush();
+        }
+
+        private void notLoggedInUserInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
+            String email, password, name;
+            int NIF;
+
+            switch(userInput) {
+                case "1":
+                    pout.println("Email = ");
+                    pout.flush();
+                    email = bin.readLine();
+
+                    pout.println("Password = ");
+                    pout.flush();
+                    password = bin.readLine();
+
+                    loggedUser = data.authenticate(email, password);
+                    if(loggedUser != null) pout.println("Login successful");
+                    else pout.println("Login failed");
+                    pout.flush();
+                    break;
+                case "2":
+                    pout.println("Name = ");
+                    pout.flush();
+                    name = bin.readLine();
+
+                    pout.println("Email = ");
+                    pout.flush();
+                    email = bin.readLine();
+
+                    pout.println("Password = ");
+                    pout.flush();
+                    password = bin.readLine();
+
+                    pout.println("Identification Number = ");
+                    pout.flush();
+                    NIF = Integer.parseInt(bin.readLine());
+
+                    User newUser = new User(name, NIF, email, password);
+                    data.registerUser(newUser);
+                    break;
+                case "3":
+                    break;
+                default:
+                    pout.println("Invalid option");
+                    pout.flush();
+                    break;
+            }
+        }
+
+        private void userInput(String userInput, BufferedReader bin, PrintStream pout) {
+
+        }
+
+        private void adminInput(String userInput, BufferedReader bin, PrintStream pout) {
+
         }
     }
 }

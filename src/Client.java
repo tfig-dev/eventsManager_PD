@@ -6,9 +6,10 @@ public class Client {
     public static void main(String[] args) {
         InetAddress serverAddr;
         int serverPort;
+        String userInput;
 
         if (args.length != 2) {
-            System.out.println("Sintaxe: java Cliente serverAddress serverPort");
+            System.out.println("Syntax: java Client serverAddress serverPort");
             return;
         }
 
@@ -16,16 +17,22 @@ public class Client {
             serverAddr = InetAddress.getByName(args[0]);
             serverPort = Integer.parseInt(args[1]);
 
-            try (Socket socket = new Socket(serverAddr, serverPort)) {
-                Scanner scanner = new Scanner(System.in);
+            try (Socket socket = new Socket(serverAddr, serverPort);
+                 Scanner scanner = new Scanner(System.in);
+                 PrintStream pout = new PrintStream(socket.getOutputStream())) {
 
                 Thread responseThread = new Thread(new ResponseHandler(socket));
                 responseThread.start();
 
                 while (true) {
-                    String userInput = scanner.nextLine();
+                    try {
+                        System.out.print("Enter your input: ");
+                        userInput = scanner.nextLine();
+                    } catch (Exception e) {
+                        System.out.println("Error reading user input. Please try again.");
+                        continue;
+                    }
 
-                    PrintStream pout = new PrintStream(socket.getOutputStream());
                     pout.println(userInput);
                     pout.flush();
 
@@ -35,20 +42,15 @@ public class Client {
                 }
 
                 responseThread.join();
-                scanner.close();
+            } catch (IOException e) {
+                System.out.println("An error occurred: " + e.getMessage());
+            } catch (InterruptedException e) {
+                System.out.println("Thread interrupted: " + e.getMessage());
             }
         } catch (UnknownHostException e) {
-            System.out.println("Destino desconhecido:\n\t" + e);
+            System.out.println("Unknown destination: " + e.getMessage());
         } catch (NumberFormatException e) {
-            System.out.println("O porto do servidor deve ser um inteiro positivo.");
-        } catch (SocketTimeoutException e) {
-            System.out.println("Nao foi recebida qualquer resposta:\n\t" + e);
-        } catch (SocketException e) {
-            System.out.println("Ocorreu um erro ao nível do socket TCP:\n\t" + e);
-        } catch (IOException e) {
-            System.out.println("Ocorreu um erro no acesso ao socket:\n\t" + e);
-        } catch (InterruptedException e) {
-            System.out.println("Thread interrupted:\n\t" + e);
+            System.out.println("Server port must be a positive integer.");
         }
     }
 
@@ -61,15 +63,14 @@ public class Client {
 
         @Override
         public void run() {
-            try {
-                BufferedReader bin = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            try (BufferedReader bin = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
                 String response;
 
                 while ((response = bin.readLine()) != null) {
                     System.out.println(response);
                 }
             } catch (IOException e) {
-                System.out.println("Error handling server response:\n\t" + e);
+                System.out.println("Error handling server response: " + e.getMessage());
             }
         }
     }
