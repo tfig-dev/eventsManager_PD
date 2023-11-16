@@ -63,7 +63,7 @@ public class Server {
         @Override
         public void run() {
             try (BufferedReader bin = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                 PrintStream pout = new PrintStream(clientSocket.getOutputStream())) {
+                 PrintStream pout = new PrintStream(clientSocket.getOutputStream(), true)) {
 
                 String receivedMsg;
 
@@ -89,7 +89,7 @@ public class Server {
             pout.println("1 - Login");
             pout.println("2 - Register");
             pout.println("3 - Exit");
-            pout.flush();
+            pout.println("Choice: ");
         }
 
         private void userMenu(PrintStream pout) {
@@ -98,7 +98,6 @@ public class Server {
             pout.println("3 - See past participations");
             pout.println("4 - Get CSV file");
             pout.println("4 - Logout");
-            pout.flush();
         }
 
         private void adminMenu(PrintStream pout) {
@@ -115,7 +114,6 @@ public class Server {
             pout.println("11 - Delete Participant to event");
             pout.println("12 - Add Participant to event");
             pout.println("13 - Logout");
-            pout.flush();
         }
 
         private void notLoggedInUserInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
@@ -125,33 +123,26 @@ public class Server {
             switch(userInput) {
                 case "1":
                     pout.println("Email = ");
-                    pout.flush();
                     email = bin.readLine();
 
                     pout.println("Password = ");
-                    pout.flush();
                     password = bin.readLine();
 
                     loggedUser = data.authenticate(email, password);
                     if(loggedUser != null) pout.println("Login successful");
                     else pout.println("Login failed");
-                    pout.flush();
                     break;
                 case "2":
-                    pout.println("Name = ");
-                    pout.flush();
+                    pout.println("Name: ");
                     name = bin.readLine();
 
-                    pout.println("Email = ");
-                    pout.flush();
+                    pout.println("Email: ");
                     email = bin.readLine();
 
-                    pout.println("Password = ");
-                    pout.flush();
+                    pout.println("Password: ");
                     password = bin.readLine();
 
-                    pout.println("Identification Number = ");
-                    pout.flush();
+                    pout.println("NIF: ");
                     NIF = Integer.parseInt(bin.readLine());
 
                     User newUser = new User(name, NIF, email, password);
@@ -161,7 +152,6 @@ public class Server {
                     break;
                 default:
                     pout.println("Invalid option");
-                    pout.flush();
                     break;
             }
         }

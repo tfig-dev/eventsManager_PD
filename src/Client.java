@@ -19,14 +19,13 @@ public class Client {
 
             try (Socket socket = new Socket(serverAddr, serverPort);
                  Scanner scanner = new Scanner(System.in);
-                 PrintStream pout = new PrintStream(socket.getOutputStream())) {
+                 PrintStream pout = new PrintStream(socket.getOutputStream(), true)) {
 
                 Thread responseThread = new Thread(new ResponseHandler(socket));
                 responseThread.start();
 
                 while (true) {
                     try {
-                        System.out.print("Enter your input: ");
                         userInput = scanner.nextLine();
                     } catch (Exception e) {
                         System.out.println("Error reading user input. Please try again.");
@@ -34,7 +33,6 @@ public class Client {
                     }
 
                     pout.println(userInput);
-                    pout.flush();
 
                     if (userInput.equals("3")) {
                         break;
