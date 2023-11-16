@@ -176,22 +176,23 @@ public class Server {
                         case "1":
                             pout.println("Enter new email: ");
                             String newEmail = bin.readLine();
-                            //change email function
+                            if(data.changeEmail(loggedUser, newEmail)) pout.println("Email changed successfully");
+                            else pout.println("Email already in use");
                             break;
                         case "2":
                             pout.println("Enter new name: ");
                             String newName = bin.readLine();
-                            //change name function
+                            data.changeName(loggedUser, newName);
                             break;
                         case "3":
                             pout.println("Enter new password: ");
                             String newPassword = bin.readLine();
-                            //change password function
+                            data.changePassword(loggedUser, newPassword);
                             break;
                         case "4":
                             pout.println("Enter new NIF: ");
                             int newNIF = Integer.parseInt(bin.readLine());
-                            //change NIF function
+                            data.changeNIF(loggedUser, newNIF);
                             break;
                         case "5":
                             break;
@@ -199,6 +200,7 @@ public class Server {
                             pout.println("Invalid edit choice");
                             break;
                     }
+
                 case "2":
                     break;
                 case "3":

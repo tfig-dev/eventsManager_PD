@@ -3,7 +3,6 @@ import java.util.HashMap;
 
 public class Data {
     private static Connection connection;
-    private static HashMap<String, User> loggedUsers = new HashMap<>();
 
     public Data() {
         connect();
@@ -72,10 +71,8 @@ public class Data {
                 String password = resultSet.getString("PASSWORD");
                 int nif = resultSet.getInt("NIF");
                 boolean isAdmin = resultSet.getBoolean("ISADMIN");
-                User user = new User(name, nif, email, password, isAdmin);
 
-                loggedUsers.put(email, user);
-                return user;
+                return new User(name, nif, email, password, isAdmin);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -83,7 +80,20 @@ public class Data {
         return null;
     }
 
-    public void registerUser(User newUser) {
+    public boolean registerUser(User newUser) {
+        String query = "SELECT * FROM USER WHERE EMAIL = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, newUser.getEmail());
+
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) return false;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+
         String insertUserSql = "INSERT INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertUserSql)) {
             preparedStatement.setString(1, newUser.getEmail());
@@ -92,8 +102,53 @@ public class Data {
             preparedStatement.setInt(4, newUser.getNif());
             preparedStatement.setBoolean(5, newUser.isAdmin());
             preparedStatement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean changeEmail(User loggedUser, String newEmail) {
+        String query = "SELECT * FROM USER WHERE EMAIL = ?";
+        String updateEmailSql = "UPDATE USER SET EMAIL = ? WHERE EMAIL = ?";
+        return updateField(loggedUser.getEmail(), newEmail, query, updateEmailSql);
+    }
+
+    public boolean changeName(User loggedUser, String newName) {
+        String updateNameSql = "UPDATE USER SET NAME = ? WHERE EMAIL = ?";
+        return updateField(loggedUser.getEmail(), newName, null, updateNameSql);
+    }
+
+    public boolean changePassword(User loggedUser, String newPassword) {
+        String updatePasswordSql = "UPDATE USER SET PASSWORD = ? WHERE EMAIL = ?";
+        return updateField(loggedUser.getEmail(), newPassword, null, updatePasswordSql);
+    }
+
+    public boolean changeNIF(User loggedUser, int newNIF) {
+        String updateNIFSql = "UPDATE USER SET NIF = ? WHERE EMAIL = ?";
+        return updateField(loggedUser.getEmail(), String.valueOf(newNIF), null, updateNIFSql);
+    }
+
+    private boolean updateField(String userEmail, String newValue, String selectSql, String updateSql) {
+        try {
+            if (selectSql != null) {
+                try (PreparedStatement selectStatement = connection.prepareStatement(selectSql)) {
+                    selectStatement.setString(1, newValue);
+                    ResultSet resultSet = selectStatement.executeQuery();
+                    if (resultSet.next()) return false;
+                }
+            }
+
+            try (PreparedStatement updateStatement = connection.prepareStatement(updateSql)) {
+                updateStatement.setString(1, newValue);
+                updateStatement.setString(2, userEmail);
+                updateStatement.executeUpdate();
+                return true;
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 

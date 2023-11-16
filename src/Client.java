@@ -32,10 +32,8 @@ public class Client {
                         System.out.println("Error reading user input. Please try again.");
                         continue;
                     }
-
                     pout.println(userInput);
                 }
-
                 responseThread.join();
             } catch (IOException e) {
                 System.out.println("An error occurred: " + e.getMessage());
