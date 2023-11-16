@@ -4,17 +4,17 @@ public class User {
     private String email;
     private String password;
     private boolean isAdmin;
-    public User(String name, int identificationNumber, String email, String password, boolean isAdmin) {
+    public User(String name, int nif, String email, String password, boolean isAdmin) {
         this.name = name;
-        this.nif = identificationNumber;
+        this.nif = nif;
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
     }
 
-    public User(String name, int identificationNumber, String email, String password) {
+    public User(String name, int nif, String email, String password) {
         this.name = name;
-        this.nif = identificationNumber;
+        this.nif = nif;
         this.email = email;
         this.password = password;
         this.isAdmin = false;

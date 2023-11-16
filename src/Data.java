@@ -70,9 +70,9 @@ public class Data {
                 String email = resultSet.getString("EMAIL");
                 String name = resultSet.getString("NAME");
                 String password = resultSet.getString("PASSWORD");
-                int identificationNumber = resultSet.getInt("NIF");
+                int nif = resultSet.getInt("NIF");
                 boolean isAdmin = resultSet.getBoolean("ISADMIN");
-                User user = new User(name, identificationNumber, email, password, isAdmin);
+                User user = new User(name, nif, email, password, isAdmin);
 
                 loggedUsers.put(email, user);
                 return user;
