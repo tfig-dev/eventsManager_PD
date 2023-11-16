@@ -97,7 +97,8 @@ public class Server {
             pout.println("2 - Input Event Code");
             pout.println("3 - See past participations");
             pout.println("4 - Get CSV file");
-            pout.println("4 - Logout");
+            pout.println("5 - Logout");
+            pout.println("Choice: ");
         }
 
         private void adminMenu(PrintStream pout) {
@@ -114,6 +115,7 @@ public class Server {
             pout.println("11 - Delete Participant to event");
             pout.println("12 - Add Participant to event");
             pout.println("13 - Logout");
+            pout.println("Choice: ");
         }
 
         private void notLoggedInUserInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
@@ -156,8 +158,58 @@ public class Server {
             }
         }
 
-        private void userInput(String userInput, BufferedReader bin, PrintStream pout) {
+        private void userInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
+            switch(userInput) {
+                case "1":
+                    pout.println("Which account detail do you want to edit?");
+                    pout.println("1 - Email");
+                    pout.println("2 - Name");
+                    pout.println("3 - Password");
+                    pout.println("4 - NIF");
+                    pout.println("5 - Exit");
+                    pout.println("Choice: ");
 
+                    String editChoice = bin.readLine();
+
+                    switch (editChoice) {
+                        case "1":
+                            pout.println("Enter new email: ");
+                            String newEmail = bin.readLine();
+                            //change email function
+                            break;
+                        case "2":
+                            pout.println("Enter new name: ");
+                            String newName = bin.readLine();
+                            //change name function
+                            break;
+                        case "3":
+                            pout.println("Enter new password: ");
+                            String newPassword = bin.readLine();
+                            //change password function
+                            break;
+                        case "4":
+                            pout.println("Enter new NIF: ");
+                            int newNIF = Integer.parseInt(bin.readLine());
+                            //change NIF function
+                            break;
+                        case "5":
+                            break;
+                        default:
+                            pout.println("Invalid edit choice");
+                            break;
+                    }
+                case "2":
+                    break;
+                case "3":
+                    break;
+                case "4":
+                    break;
+                case "5":
+                    break;
+                default:
+                    pout.println("Invalid option");
+                    break;
+            }
         }
 
         private void adminInput(String userInput, BufferedReader bin, PrintStream pout) {

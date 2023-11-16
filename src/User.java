@@ -1,12 +1,12 @@
 public class User {
     private String name;
-    private int identificationNumber;
+    private int nif;
     private String email;
     private String password;
     private boolean isAdmin;
     public User(String name, int identificationNumber, String email, String password, boolean isAdmin) {
         this.name = name;
-        this.identificationNumber = identificationNumber;
+        this.nif = identificationNumber;
         this.email = email;
         this.password = password;
         this.isAdmin = isAdmin;
@@ -14,7 +14,7 @@ public class User {
 
     public User(String name, int identificationNumber, String email, String password) {
         this.name = name;
-        this.identificationNumber = identificationNumber;
+        this.nif = identificationNumber;
         this.email = email;
         this.password = password;
         this.isAdmin = false;
@@ -30,12 +30,12 @@ public class User {
         this.name = name;
     }
 
-    public int getIdentificationNumber() {
-        return identificationNumber;
+    public int getNif() {
+        return nif;
     }
 
-    public void setIdentificationNumber(int identificationNumber) {
-        this.identificationNumber = identificationNumber;
+    public void setNif(int nif) {
+        this.nif = nif;
     }
 
     public String getEmail() {
@@ -56,11 +56,11 @@ public class User {
 
     @Override
     public String toString() {
-        return "Name: " + name + "\nIdentification Number: " + identificationNumber + "\nEmail: " + email;
+        return "Name: " + name + "\nNIF: " + nif + "\nEmail: " + email;
     }
 
     public String toStringFile() {
-        return name + "," + identificationNumber + "," + email + "," + password + "," + isAdmin;
+        return name + "," + nif + "," + email + "," + password + "," + isAdmin;
     }
 
     public String getUsername() {

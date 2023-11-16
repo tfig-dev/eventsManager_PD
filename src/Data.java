@@ -1,10 +1,5 @@
-import java.io.*;
 import java.sql.*;
-import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
 
 public class Data {
     private static Connection connection;
@@ -94,7 +89,7 @@ public class Data {
             preparedStatement.setString(1, newUser.getEmail());
             preparedStatement.setString(2, newUser.getName());
             preparedStatement.setString(3, newUser.getPassword());
-            preparedStatement.setInt(4, newUser.getIdentificationNumber());
+            preparedStatement.setInt(4, newUser.getNif());
             preparedStatement.setBoolean(5, newUser.isAdmin());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
