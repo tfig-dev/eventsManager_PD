@@ -148,7 +148,8 @@ public class Server {
                     NIF = Integer.parseInt(bin.readLine());
 
                     User newUser = new User(name, NIF, email, password);
-                    data.registerUser(newUser);
+                    if(data.registerUser(newUser)) pout.println("Registration successful");
+                    else pout.println("Registration failed");
                     break;
                 case "3":
                     pout.println("exit");
@@ -182,17 +183,20 @@ public class Server {
                         case "2":
                             pout.println("Enter new name: ");
                             String newName = bin.readLine();
-                            data.changeName(loggedUser, newName);
+                            if(data.changeName(loggedUser, newName)) pout.println("Name changed successfully");
+                            else pout.println("There was an error changing your name");
                             break;
                         case "3":
                             pout.println("Enter new password: ");
                             String newPassword = bin.readLine();
-                            data.changePassword(loggedUser, newPassword);
+                            if(data.changePassword(loggedUser, newPassword)) pout.println("Password changed successfully");
+                            else pout.println("There was an error changing your password");
                             break;
                         case "4":
                             pout.println("Enter new NIF: ");
                             int newNIF = Integer.parseInt(bin.readLine());
-                            data.changeNIF(loggedUser, newNIF);
+                            if(data.changeNIF(loggedUser, newNIF)) pout.println("NIF changed successfully");
+                            else pout.println("There was an error changing your NIF");
                             break;
                         case "5":
                             break;
@@ -200,7 +204,6 @@ public class Server {
                             pout.println("Invalid edit choice");
                             break;
                     }
-
                 case "2":
                     break;
                 case "3":
@@ -208,6 +211,7 @@ public class Server {
                 case "4":
                     break;
                 case "5":
+                    loggedUser = null;
                     break;
                 default:
                     pout.println("Invalid option");
