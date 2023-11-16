@@ -3,6 +3,7 @@ import java.io.*;
 import java.util.Scanner;
 
 public class Client {
+    private static boolean exit = false;
     public static void main(String[] args) {
         InetAddress serverAddr;
         int serverPort;
@@ -24,7 +25,7 @@ public class Client {
                 Thread responseThread = new Thread(new ResponseHandler(socket));
                 responseThread.start();
 
-                while (true) {
+                while (!exit) {
                     try {
                         userInput = scanner.nextLine();
                     } catch (Exception e) {
@@ -33,10 +34,6 @@ public class Client {
                     }
 
                     pout.println(userInput);
-
-                    if (userInput.equals("3")) {
-                        break;
-                    }
                 }
 
                 responseThread.join();
@@ -65,6 +62,11 @@ public class Client {
                 String response;
 
                 while ((response = bin.readLine()) != null) {
+                    if(response.equals("exit")) {
+                        exit = true;
+                        System.out.println("Connection closed. Press enter to exit.");
+                        break;
+                    }
                     System.out.println(response);
                 }
             } catch (IOException e) {

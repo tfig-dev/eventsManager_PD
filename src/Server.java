@@ -151,6 +151,7 @@ public class Server {
                     data.registerUser(newUser);
                     break;
                 case "3":
+                    pout.println("exit");
                     break;
                 default:
                     pout.println("Invalid option");
