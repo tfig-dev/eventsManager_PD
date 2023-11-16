@@ -43,9 +43,10 @@ public class Server {
         private final Socket clientSocket;
         private User loggedUser;
 
-        public ClientHandler(Socket clientSocket) {
+        public ClientHandler(Socket clientSocket) throws SocketException {
             this.clientSocket = clientSocket;
             this.loggedUser = null;
+            //this.clientSocket.setSoTimeout(10000); POR ENQUANTO NAO METER ISTO
         }
 
         private void handleInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
