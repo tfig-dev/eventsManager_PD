@@ -1,3 +1,5 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.security.SecureRandom;
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -328,5 +330,31 @@ public class Data {
         }
 
         return attendanceRecords;
+    }
+
+    public boolean saveAttendanceRecords(List<Event> events, User loggedUser) {
+        if(events.isEmpty()) return false;
+
+        String file = "src/datafiles/output_" + loggedUser.getName() + ".csv";
+        try (PrintWriter printWriter = new PrintWriter(file)) {
+            printWriter.println("ID,NAME,LOCAL,DATE,BEGINHOUR,ENDHOUR");
+            for (Event event : events) {
+                printWriter.println(eventToCSV(event));
+            }
+            return true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private String eventToCSV(Event event) {
+        return String.format("%d,%s,%s,%s,%s,%s",
+                event.getId(),
+                event.getName(),
+                event.getLocation(),
+                event.getDate(),
+                event.getStartTime(),
+                event.getEndTime());
     }
 }

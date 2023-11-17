@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
@@ -37,12 +38,15 @@ public class Server {
             System.out.println("O porto de escuta deve ser um inteiro positivo.");
         } catch (IOException e) {
             System.out.println("Ocorreu um erro no servidor: " + e);
+        } finally {
+            data.closeConnection();
         }
     }
 
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
         private User loggedUser;
+        List<Event> events = new ArrayList<>();
 
         public ClientHandler(Socket clientSocket) throws SocketException {
             this.clientSocket = clientSocket;
@@ -98,7 +102,7 @@ public class Server {
             pout.println("1 - Edit Account Details");
             pout.println("2 - Input Event Code");
             pout.println("3 - See past participations");
-            pout.println("4 - Get CSV file");
+            pout.println("4 - Get past participations CSV file");
             pout.println("5 - Logout");
             pout.println("Choice: ");
         }
@@ -206,6 +210,7 @@ public class Server {
                             pout.println("Invalid edit choice");
                             break;
                     }
+                    break;
                 case "2":
                     pout.println("Enter event code: ");
                     String eventCode = bin.readLine();
@@ -226,8 +231,7 @@ public class Server {
                     pout.println("Choice: ");
 
                     choice = bin.readLine();
-                    String parameter = null;
-                    List<Event> events = null;
+                    String parameter;
 
                     switch (choice) {
                         case "1":
@@ -259,7 +263,10 @@ public class Server {
                             pout.println("Invalid choice");
                             break;
                     }
+                    break;
                 case "4":
+                    if(data.saveAttendanceRecords(events, loggedUser)) pout.println("CSV file generated successfully");
+                    else pout.println("You must first get an output from option 3");
                     break;
                 case "5":
                     loggedUser = null;

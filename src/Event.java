@@ -1,5 +1,5 @@
 public class Event {
-    private int ID;
+    private final int ID;
     private String name;
     private String location;
     private String date;
@@ -22,5 +22,29 @@ public class Event {
     @Override
     public String toString() {
         return "Event{" + "ID=" + ID + ", name=" + name + ", location=" + location + ", date=" + date + ", startTime=" + startTime + ", endTime=" + endTime;
+    }
+
+    public int getId() {
+        return ID;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public String getStartTime() {
+        return startTime;
+    }
+
+    public String getEndTime() {
+        return endTime;
     }
 }
