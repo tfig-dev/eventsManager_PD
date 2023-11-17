@@ -207,10 +207,13 @@ public class Server {
                 case "2":
                     pout.println("Enter event code: ");
                     String eventCode = bin.readLine();
-                    if(data.checkEvent(eventCode).equals("used")) pout.println("This code was already used");
-                    else if(data.checkEvent(eventCode).equals("success")) pout.println("Presence registered successfully");
-                    else if(data.checkEvent(eventCode).equals("error")) pout.println("Invalid Code");
-                    else pout.println("Something went wrong");
+                    String status = data.checkEvent(eventCode, loggedUser);
+                    switch (status) {
+                        case "used" -> pout.println("This code was already used");
+                        case "success" -> pout.println("Presence registered successfully");
+                        case "error" -> pout.println("Invalid Code");
+                        default -> pout.println("Something went wrong");
+                    }
                     break;
                 case "3":
                     break;

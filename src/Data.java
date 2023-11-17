@@ -2,7 +2,6 @@ import java.security.SecureRandom;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
 
 public class Data {
     private static Connection connection;
@@ -28,7 +27,7 @@ public class Data {
     }
 
     private static void createTables() {
-        Statement stmt = null;
+        Statement stmt;
 
         try {
             Class.forName("org.sqlite.JDBC");
@@ -230,9 +229,43 @@ public class Data {
         }
     }
 
-    public String checkEvent(String eventCode) {
-        //TODO
-        return "";
+    public String checkEvent(String eventCode, User loggedUser) {
+        try {
+            // Check if the event with the given code exists
+            String selectEventQuery = "SELECT * FROM EVENT WHERE CODE = ?";
+            try (PreparedStatement selectEventStatement = connection.prepareStatement(selectEventQuery)) {
+                selectEventStatement.setString(1, eventCode);
+                try (ResultSet eventResultSet = selectEventStatement.executeQuery()) {
+                    if (eventResultSet.next()) {
+                        int eventId = eventResultSet.getInt("ID");
+
+                        String selectParticipantQuery = "SELECT * FROM EVENT_PARTICIPANT WHERE EVENT_ID = ? AND USER_EMAIL = ?";
+                        try (PreparedStatement selectParticipantStatement = connection.prepareStatement(selectParticipantQuery)) {
+                            selectParticipantStatement.setInt(1, eventId);
+                            selectParticipantStatement.setString(2, loggedUser.getEmail());
+                            try (ResultSet participantResultSet = selectParticipantStatement.executeQuery()) {
+                                if (participantResultSet.next()) {
+                                    return "used";
+                                } else {
+                                    String insertParticipantQuery = "INSERT INTO EVENT_PARTICIPANT (EVENT_ID, USER_EMAIL) VALUES (?, ?)";
+                                    try (PreparedStatement insertParticipantStatement = connection.prepareStatement(insertParticipantQuery)) {
+                                        insertParticipantStatement.setInt(1, eventId);
+                                        insertParticipantStatement.setString(2, loggedUser.getEmail());
+                                        insertParticipantStatement.executeUpdate();
+                                        return "success";
+                                    }
+                                }
+                            }
+                        }
+                    } else {
+                        return "error";
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return "error";
+        }
     }
 
     public boolean createEvent(String eventName, String local, String date, String startTime, String endTime) {
