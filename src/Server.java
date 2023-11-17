@@ -237,14 +237,14 @@ public class Server {
                         case "1":
                             pout.println("Enter event name: ");
                             parameter = bin.readLine();
-                            events = data.getAttendanceRecords(parameter, null,null, null);
+                            events = data.getAttendanceRecords(parameter, null,null, null, false);
                             if(events != null && !events.isEmpty()) pout.println(events);
                             else pout.println("There are no events with this filter");
                             break;
                         case "2":
                             pout.println("Enter event date (yyyy-mm-dd): ");
                             parameter = bin.readLine();
-                            events = data.getAttendanceRecords(null, parameter,null, null);
+                            events = data.getAttendanceRecords(null, parameter,null, null, false);
                             if(events != null && !events.isEmpty()) pout.println(events);
                             else pout.println("There are no events with this filter");
                             break;
@@ -253,7 +253,7 @@ public class Server {
                             parameter = bin.readLine();
                             pout.println("Enter end date (yyyy-mm-dd): ");
                             String secondParameter = bin.readLine();
-                            events = data.getAttendanceRecords(null, null,parameter, secondParameter);
+                            events = data.getAttendanceRecords(null, null, parameter, secondParameter, false);
                             if(events != null && !events.isEmpty()) pout.println(events);
                             else pout.println("There are no events with this filter");
                             break;
@@ -279,7 +279,9 @@ public class Server {
 
         private void adminInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException{
             String choice;
+            String parameter;
             int eventID;
+
             switch(userInput) {
                 case "1":
                     pout.println("Event Name: ");
@@ -298,7 +300,7 @@ public class Server {
                 case "2":
                     pout.println("Enter event ID: ");
                     eventID = Integer.parseInt(bin.readLine());
-                    if(!data.checkIfEventCanBeEdited(eventID)) {
+                    if(data.checkIfEventCanBeEdited(eventID)) {
                         pout.println("This event already has participants. Cannot be edited");
                         break;
                     }
@@ -311,7 +313,6 @@ public class Server {
                     pout.println("6 - Exit");
                     pout.println("Choice: ");
                     choice = bin.readLine();
-                    String parameter;
 
                     switch (choice) {
                         case "1":
@@ -352,8 +353,58 @@ public class Server {
                     }
                     break;
                 case "3":
+                    pout.println("Enter event ID: ");
+                    eventID = Integer.parseInt(bin.readLine());
+
+                    if(data.checkIfEventCanBeEdited(eventID)) {
+                        pout.println("This event already has participants. Cannot be deleted");
+                        break;
+                    }
+
+                    if(data.deleteEvent(eventID)) pout.println("Event deleted successfully");
+                    else pout.println("There was an error deleting the event");
+
                     break;
                 case "4":
+                    pout.println("Events filter: ");
+                    pout.println("1 - Name");
+                    pout.println("2 - By date");
+                    pout.println("3 - Between dates");
+                    pout.println("4 - Exit");
+                    pout.println("Choice: ");
+
+                    choice = bin.readLine();
+
+                    switch (choice) {
+                        case "1":
+                            pout.println("Enter event name: ");
+                            parameter = bin.readLine();
+                            events = data.getAttendanceRecords(parameter, null,null, null, true);
+                            if(events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("There are no events with this filter");
+                            break;
+                        case "2":
+                            pout.println("Enter event date (yyyy-mm-dd): ");
+                            parameter = bin.readLine();
+                            events = data.getAttendanceRecords(null, parameter,null, null, true);
+                            if(events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("There are no events with this filter");
+                            break;
+                        case "3":
+                            pout.println("Enter start date (yyyy-mm-dd): ");
+                            parameter = bin.readLine();
+                            pout.println("Enter end date (yyyy-mm-dd): ");
+                            String secondParameter = bin.readLine();
+                            events = data.getAttendanceRecords(null, null, parameter, secondParameter, true);
+                            if(events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("There are no events with this filter");
+                            break;
+                        case "4":
+                            break;
+                        default:
+                            pout.println("Invalid choice");
+                            break;
+                    }
                     break;
                 case "5":
                     pout.println("Enter event ID: ");

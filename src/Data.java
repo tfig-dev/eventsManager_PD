@@ -292,45 +292,82 @@ public class Data {
         }
     }
 
-    public List<Event> getAttendanceRecords(String eventName, String day, String startDate, String endDate) {
+    public List<Event> getAttendanceRecords(String eventName, String day, String startDate, String endDate, boolean admin) {
         List<Event> attendanceRecords = new ArrayList<>();
+        if(!admin) {
+            try {
+                StringBuilder queryBuilder = new StringBuilder();
+                queryBuilder.append("SELECT * FROM EVENT_PARTICIPANT EP ");
+                queryBuilder.append("INNER JOIN EVENT E ON EP.EVENT_ID = E.ID ");
+                queryBuilder.append("INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL ");
+                queryBuilder.append("WHERE 1=1 ");
 
-        try {
-            StringBuilder queryBuilder = new StringBuilder();
-            queryBuilder.append("SELECT * FROM EVENT_PARTICIPANT EP ");
-            queryBuilder.append("INNER JOIN EVENT E ON EP.EVENT_ID = E.ID ");
-            queryBuilder.append("INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL ");
-            queryBuilder.append("WHERE 1=1 ");
+                if (eventName != null && !eventName.isEmpty()) queryBuilder.append("AND E.NAME = ? ");
+                if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE = ? ");
+                if (startDate != null && !startDate.isEmpty()) queryBuilder.append("AND E.DATE >= ? ");
+                if (endDate != null && !endDate.isEmpty()) queryBuilder.append("AND E.DATE <= ? ");
 
-            if (eventName != null && !eventName.isEmpty()) queryBuilder.append("AND E.NAME = ? ");
-            if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE = ? ");
-            if (startDate != null && !startDate.isEmpty()) queryBuilder.append("AND E.DATE >= ? ");
-            if (endDate != null && !endDate.isEmpty())queryBuilder.append("AND E.DATE <= ? ");
+                try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+                    int parameterIndex = 1;
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
-                int parameterIndex = 1;
+                    if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, eventName);
+                    if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
+                    if (startDate != null && !startDate.isEmpty()) preparedStatement.setString(parameterIndex++, startDate);
+                    if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
 
-                if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, eventName);
-                if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
-                if (startDate != null && !startDate.isEmpty()) preparedStatement.setString(parameterIndex++, startDate);
-                if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
-
-                try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                    while (resultSet.next()) {
-                        Event attendanceRecord = new Event(
-                                resultSet.getInt("ID"),
-                                resultSet.getString("NAME"),
-                                resultSet.getString("LOCAL"),
-                                resultSet.getString("DATE"),
-                                resultSet.getString("BEGINHOUR"),
-                                resultSet.getString("ENDHOUR")
-                        );
-                        attendanceRecords.add(attendanceRecord);
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            Event attendanceRecord = new Event(
+                                    resultSet.getInt("ID"),
+                                    resultSet.getString("NAME"),
+                                    resultSet.getString("LOCAL"),
+                                    resultSet.getString("DATE"),
+                                    resultSet.getString("BEGINHOUR"),
+                                    resultSet.getString("ENDHOUR")
+                            );
+                            attendanceRecords.add(attendanceRecord);
+                        }
                     }
                 }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
+        }
+        else if(admin) {
+            try {
+                StringBuilder queryBuilder = new StringBuilder();
+                queryBuilder.append("SELECT * FROM EVENT");
+
+                if (eventName != null && !eventName.isEmpty()) queryBuilder.append(" WHERE NAME = ?");
+                if (day != null && !day.isEmpty()) queryBuilder.append(" WHERE DATE = ?");
+                if (startDate != null && !startDate.isEmpty()) queryBuilder.append(" WHERE DATE >= ?");
+                if (endDate != null && !endDate.isEmpty()) queryBuilder.append(" AND DATE <= ?");
+
+                try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+                    int parameterIndex = 1;
+
+                    if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, eventName);
+                    if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
+                    if (startDate != null && !startDate.isEmpty())preparedStatement.setString(parameterIndex++, startDate);
+                    if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
+
+                    try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                        while (resultSet.next()) {
+                            Event attendanceRecord = new Event(
+                                    resultSet.getInt("ID"),
+                                    resultSet.getString("NAME"),
+                                    resultSet.getString("LOCAL"),
+                                    resultSet.getString("DATE"),
+                                    resultSet.getString("BEGINHOUR"),
+                                    resultSet.getString("ENDHOUR")
+                            );
+                            attendanceRecords.add(attendanceRecord);
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
 
         return attendanceRecords;
@@ -369,13 +406,13 @@ public class Data {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
                     int participationCount = resultSet.getInt(1);
-                    return participationCount == 0;
+                    return participationCount != 0;
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return false;
+        return true;
     }
 
     public boolean editEvent(int eventID, String name, String local, String date, String startHour, String endHour) {
@@ -408,6 +445,18 @@ public class Data {
             }
         } catch (RuntimeException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public boolean deleteEvent(int eventID) {
+        String query = "DELETE FROM EVENT WHERE ID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, eventID);
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
         }
     }
 }

@@ -21,7 +21,14 @@ public class Event {
 
     @Override
     public String toString() {
-        return "Event{" + "ID=" + ID + ", name=" + name + ", location=" + location + ", date=" + date + ", startTime=" + startTime + ", endTime=" + endTime;
+        return "Event{" +
+                "ID=" + ID +
+                ", name='" + name + '\'' +
+                ", location='" + location + '\'' +
+                ", date='" + date + '\'' +
+                ", startTime='" + startTime + '\'' +
+                ", endTime='" + endTime + '\'' +
+                "}\n";
     }
 
     public int getId() {
