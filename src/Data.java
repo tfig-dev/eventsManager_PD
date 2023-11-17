@@ -1,6 +1,7 @@
 import java.security.SecureRandom;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 
 public class Data {
@@ -11,7 +12,7 @@ public class Data {
         createTables();
     }
 
-    public static void connect(){
+    private static void connect(){
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
@@ -26,7 +27,7 @@ public class Data {
         }
     }
 
-    public static void createTables() {
+    private static void createTables() {
         Statement stmt = null;
 
         try {
@@ -51,8 +52,27 @@ public class Data {
                     " BEGINHOUR TEXT NOT NULL, " +
                     " ENDHOUR TEXT NOT NULL," +
                     " CODE TEXT," +
-                    " CODEEXPIRATIONTIME TIME)";
+                    " CODEEXPIRATIONTIME TEXT)";
             stmt.executeUpdate(events);
+
+            String eventParticipants = "CREATE TABLE IF NOT EXISTS EVENT_PARTICIPANT " +
+                    "(EVENT_ID INT," +
+                    " USER_EMAIL INT," +
+                    " PRIMARY KEY (EVENT_ID, USER_EMAIL)," +
+                    " FOREIGN KEY (EVENT_ID) REFERENCES EVENT(ID)," +
+                    " FOREIGN KEY (USER_EMAIL) REFERENCES USER(EMAIL))";
+
+            stmt.executeUpdate(eventParticipants);
+
+            String insertDefaultEvents = "INSERT OR IGNORE INTO EVENT (ID, NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES " +
+                    "(1, 'Ze dos leitoes', 'ISEC', '18/11/2023', '15:30', '19:30'), " +
+                    "(2, 'Maria das vacas', 'ESEC', '19/11/2023', '16:30', '20:30')";
+            stmt.executeUpdate(insertDefaultEvents);
+
+            String insertDefaultUsers = "INSERT OR IGNORE INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES " +
+                    "('admin', 'admin', 'admin', 123456789, 1), " +
+                    "('user', 'user', 'user', 987654321, 0)";
+            stmt.executeUpdate(insertDefaultUsers);
 
             stmt.close();
         } catch ( Exception e ) {
@@ -190,17 +210,22 @@ public class Data {
                     String updateQuery = "UPDATE EVENT SET CODE = ?, CODEEXPIRATIONTIME = ? WHERE ID = ?";
                     try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
                         updateStatement.setString(1, generateCode());
-                        updateStatement.setString(2, String.valueOf(LocalDateTime.now().plusMinutes(minutes)));
+
+                        LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(minutes);
+                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
+                        String formattedExpirationTime = expirationTime.format(formatter);
+                        updateStatement.setString(2, formattedExpirationTime);
+
+                        updateStatement.setInt(3, eventID);
 
                         int rowsUpdated = updateStatement.executeUpdate();
-
-                        if (rowsUpdated > 0) return true;
-                        else return false;
+                        return rowsUpdated > 0;
                     }
                 } else
                     return false;
                 }
         } catch (SQLException e) {
+            e.printStackTrace();
             return false;
         }
     }
@@ -208,5 +233,21 @@ public class Data {
     public String checkEvent(String eventCode) {
         //TODO
         return "";
+    }
+
+    public boolean createEvent(String eventName, String local, String date, String startTime, String endTime) {
+        String insertEventSql = "INSERT INTO EVENT (NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES (?, ?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(insertEventSql)) {
+            preparedStatement.setString(1, eventName);
+            preparedStatement.setString(2, local);
+            preparedStatement.setString(3, date);
+            preparedStatement.setString(4, startTime);
+            preparedStatement.setString(5, endTime);
+            preparedStatement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

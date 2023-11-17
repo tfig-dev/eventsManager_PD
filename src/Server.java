@@ -103,19 +103,18 @@ public class Server {
         }
 
         private void adminMenu(PrintStream pout) {
-            pout.println("1 - Change Admin Account Details");
-            pout.println("2 - Create Event");
-            pout.println("3 - Edit Event");
-            pout.println("4 - Delete Event");
-            pout.println("5 - Check Events");
-            pout.println("6 - Generate Event Code");
-            pout.println("7 - Check Participants");
-            pout.println("8 - Get CSV File");
-            pout.println("9 - Check events by user participation");
-            pout.println("10 - Get CSV File");
-            pout.println("11 - Delete Participant to event");
-            pout.println("12 - Add Participant to event");
-            pout.println("13 - Logout");
+            pout.println("1 - Create Event");
+            pout.println("2 - Edit Event");
+            pout.println("3 - Delete Event");
+            pout.println("4 - Check Events");
+            pout.println("5 - Generate Event Code");
+            pout.println("6 - Check Participants");
+            pout.println("7 - Get CSV File");
+            pout.println("8 - Check events by user participation");
+            pout.println("9 - Get CSV File");
+            pout.println("10 - Delete Participant to event");
+            pout.println("11 - Add Participant to event");
+            pout.println("12 - Logout");
             pout.println("Choice: ");
         }
 
@@ -226,8 +225,42 @@ public class Server {
             }
         }
 
-        private void adminInput(String userInput, BufferedReader bin, PrintStream pout) {
-
+        private void adminInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException{
+            switch(userInput) {
+                case "1":
+                    pout.println("Event Name: ");
+                    String eventName = bin.readLine();
+                    pout.println("Local: ");
+                    String local = bin.readLine();
+                    pout.println("Date (DAY/MONTH/YEAR): ");
+                    String date = bin.readLine();
+                    pout.println("Start Time (HOUR:MINUTE): ");
+                    String startTime = bin.readLine();
+                    pout.println("End Time (HOUR:MINUTE): ");
+                    String endTime = bin.readLine();
+                    if(data.createEvent(eventName, local, date, startTime, endTime)) pout.println("Event created successfully");
+                    else pout.println("There was an error creating the event");
+                    break;
+                case "2":
+                    break;
+                case "3":
+                    break;
+                case "4":
+                    break;
+                case "5":
+                    pout.println("Enter event ID: ");
+                    int eventID = Integer.parseInt(bin.readLine());
+                    pout.println("Enter code duration (minutes): ");
+                    int codeDuration = Integer.parseInt(bin.readLine());
+                    if(data.updateCode(eventID, codeDuration)) pout.println("Code generated successfully");
+                    else pout.println("Event does not exist");
+                    break;
+                case "6":
+                    break;
+                default:
+                    pout.println("Invalid option");
+                    break;
+            }
         }
     }
 }
