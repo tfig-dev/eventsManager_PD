@@ -278,6 +278,8 @@ public class Server {
         }
 
         private void adminInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException{
+            String choice;
+            int eventID;
             switch(userInput) {
                 case "1":
                     pout.println("Event Name: ");
@@ -294,6 +296,60 @@ public class Server {
                     else pout.println("There was an error creating the event");
                     break;
                 case "2":
+                    pout.println("Enter event ID: ");
+                    eventID = Integer.parseInt(bin.readLine());
+                    if(!data.checkIfEventCanBeEdited(eventID)) {
+                        pout.println("This event already has participants. Cannot be edited");
+                        break;
+                    }
+                    pout.println("What do you want to edit?");
+                    pout.println("1 - Name");
+                    pout.println("2 - Local");
+                    pout.println("3 - Date");
+                    pout.println("4 - Start Time");
+                    pout.println("5 - End Time");
+                    pout.println("6 - Exit");
+                    pout.println("Choice: ");
+                    choice = bin.readLine();
+                    String parameter;
+
+                    switch (choice) {
+                        case "1":
+                            pout.println("Enter new name: ");
+                            parameter = bin.readLine();
+                            if(data.editEvent(eventID, parameter, null, null, null, null)) pout.println("Event edited successfully");
+                            else pout.println("There was an error editing the event");
+                            break;
+                        case "2":
+                            pout.println("Enter new local: ");
+                            parameter = bin.readLine();
+                            if(data.editEvent(eventID, null, parameter, null, null, null)) pout.println("Event edited successfully");
+                            else pout.println("There was an error editing the event");
+                            break;
+                        case "3":
+                            pout.println("Enter new date (yyyy-mm-dd): ");
+                            parameter = bin.readLine();
+                            if(data.editEvent(eventID, null, null, parameter, null, null)) pout.println("Event edited successfully");
+                            else pout.println("There was an error editing the event");
+                            break;
+                        case "4":
+                            pout.println("Enter new start time (HOUR:MINUTE): ");
+                            parameter = bin.readLine();
+                            if(data.editEvent(eventID, null, null, null, parameter, null)) pout.println("Event edited successfully");
+                            else pout.println("There was an error editing the event");
+                            break;
+                        case "5":
+                            pout.println("Enter new end time (HOUR:MINUTE): ");
+                            parameter = bin.readLine();
+                            if(data.editEvent(eventID, null, null, null, null, parameter)) pout.println("Event edited successfully");
+                            else pout.println("There was an error editing the event");
+                            break;
+                        case "6":
+                            break;
+                        default:
+                            pout.println("Invalid choice");
+                            break;
+                    }
                     break;
                 case "3":
                     break;
@@ -301,7 +357,7 @@ public class Server {
                     break;
                 case "5":
                     pout.println("Enter event ID: ");
-                    int eventID = Integer.parseInt(bin.readLine());
+                    eventID = Integer.parseInt(bin.readLine());
                     pout.println("Enter code duration (minutes): ");
                     int codeDuration = Integer.parseInt(bin.readLine());
                     if(data.updateCode(eventID, codeDuration)) pout.println("Code generated successfully");

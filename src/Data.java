@@ -40,7 +40,7 @@ public class Data {
             stmt = connection.createStatement();
 
             String users = "CREATE TABLE IF NOT EXISTS USER " +
-                    "(EMAIL INT PRIMARY KEY," +
+                    "(EMAIL TEXT PRIMARY KEY," +
                     " NAME TEXT NOT NULL, " +
                     " PASSWORD TEXT NOT NULL, " +
                     " NIF CHAR(9) NOT NULL, " +
@@ -60,7 +60,7 @@ public class Data {
 
             String eventParticipants = "CREATE TABLE IF NOT EXISTS EVENT_PARTICIPANT " +
                     "(EVENT_ID INT," +
-                    " USER_EMAIL INT," +
+                    " USER_EMAIL STRING," +
                     " PRIMARY KEY (EVENT_ID, USER_EMAIL)," +
                     " FOREIGN KEY (EVENT_ID) REFERENCES EVENT(ID)," +
                     " FOREIGN KEY (USER_EMAIL) REFERENCES USER(EMAIL))";
@@ -68,14 +68,18 @@ public class Data {
             stmt.executeUpdate(eventParticipants);
 
             String insertDefaultEvents = "INSERT OR IGNORE INTO EVENT (ID, NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES " +
-                    "(1, 'Ze dos leitoes', 'ISEC', '18/11/2023', '15:30', '19:30'), " +
-                    "(2, 'Maria das vacas', 'ESEC', '19/11/2023', '16:30', '20:30')";
+                    "(1, 'Ze dos leitoes', 'ISEC', '2023-11-19', '15:30', '19:30'), " +
+                    "(2, 'Maria das vacas', 'ESEC', '2023-11-20', '16:30', '20:30')";
             stmt.executeUpdate(insertDefaultEvents);
 
             String insertDefaultUsers = "INSERT OR IGNORE INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES " +
                     "('admin', 'admin', 'admin', 123456789, 1), " +
                     "('user', 'user', 'user', 987654321, 0)";
             stmt.executeUpdate(insertDefaultUsers);
+
+            String insertDefaultParticipations = "INSERT OR IGNORE INTO EVENT_PARTICIPANT (EVENT_ID, USER_EMAIL) VALUES " +
+                    "(1, 'user')";
+            stmt.executeUpdate(insertDefaultParticipations);
 
             stmt.close();
         } catch ( Exception e ) {
@@ -356,5 +360,54 @@ public class Data {
                 event.getDate(),
                 event.getStartTime(),
                 event.getEndTime());
+    }
+
+    public boolean checkIfEventCanBeEdited(int eventID) {
+        String query = "SELECT COUNT(*) FROM EVENT_PARTICIPANT WHERE EVENT_ID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, eventID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    int participationCount = resultSet.getInt(1);
+                    return participationCount == 0;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean editEvent(int eventID, String name, String local, String date, String startHour, String endHour) {
+        try {
+            StringBuilder queryBuilder = new StringBuilder();
+            queryBuilder.append("UPDATE EVENT SET");
+
+            if (name != null && !name.isEmpty()) queryBuilder.append(" NAME = ?");
+            if (local != null && !local.isEmpty()) queryBuilder.append(" LOCAL = ?");
+            if (date != null && !date.isEmpty()) queryBuilder.append(" DATE = ?");
+            if (startHour != null && !startHour.isEmpty()) queryBuilder.append(" BEGINHOUR = ?");
+            if (endHour != null && !endHour.isEmpty()) queryBuilder.append(" ENDHOUR = ?");
+
+            queryBuilder.append(" WHERE ID = ?");
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+                int parameterIndex = 1;
+
+                if (name != null && !name.isEmpty()) preparedStatement.setString(parameterIndex++, name);
+                if (local != null && !local.isEmpty()) preparedStatement.setString(parameterIndex++, local);
+                if (date != null && !date.isEmpty()) preparedStatement.setString(parameterIndex++, date);
+                if (startHour != null && !startHour.isEmpty()) preparedStatement.setString(parameterIndex++, startHour);
+                if (endHour != null && !endHour.isEmpty()) preparedStatement.setString(parameterIndex++, endHour);
+                preparedStatement.setInt(parameterIndex, eventID);
+
+                int rowsAffected = preparedStatement.executeUpdate();
+                return rowsAffected > 0;
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        } catch (RuntimeException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
