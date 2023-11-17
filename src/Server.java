@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.List;
 
 public class Server {
     static Data data = new Data();
@@ -161,6 +162,7 @@ public class Server {
         }
 
         private void userInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
+            String choice;
             switch(userInput) {
                 case "1":
                     pout.println("Which account detail do you want to edit?");
@@ -171,9 +173,9 @@ public class Server {
                     pout.println("5 - Exit");
                     pout.println("Choice: ");
 
-                    String editChoice = bin.readLine();
+                    choice = bin.readLine();
 
-                    switch (editChoice) {
+                    switch (choice) {
                         case "1":
                             pout.println("Enter new email: ");
                             String newEmail = bin.readLine();
@@ -216,7 +218,47 @@ public class Server {
                     }
                     break;
                 case "3":
-                    break;
+                    pout.println("Participations filter: ");
+                    pout.println("1 - Name");
+                    pout.println("2 - By date");
+                    pout.println("3 - Between dates");
+                    pout.println("4 - Exit");
+                    pout.println("Choice: ");
+
+                    choice = bin.readLine();
+                    String parameter = null;
+                    List<Event> events = null;
+
+                    switch (choice) {
+                        case "1":
+                            pout.println("Enter event name: ");
+                            parameter = bin.readLine();
+                            events = data.getAttendanceRecords(parameter, null,null, null);
+                            if(events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("There are no events with this filter");
+                            break;
+                        case "2":
+                            pout.println("Enter event date (yyyy-mm-dd): ");
+                            parameter = bin.readLine();
+                            events = data.getAttendanceRecords(null, parameter,null, null);
+                            if(events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("There are no events with this filter");
+                            break;
+                        case "3":
+                            pout.println("Enter start date (yyyy-mm-dd): ");
+                            parameter = bin.readLine();
+                            pout.println("Enter end date (yyyy-mm-dd): ");
+                            String secondParameter = bin.readLine();
+                            events = data.getAttendanceRecords(null, null,parameter, secondParameter);
+                            if(events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("There are no events with this filter");
+                            break;
+                        case "4":
+                            break;
+                        default:
+                            pout.println("Invalid choice");
+                            break;
+                    }
                 case "4":
                     break;
                 case "5":
@@ -235,7 +277,7 @@ public class Server {
                     String eventName = bin.readLine();
                     pout.println("Local: ");
                     String local = bin.readLine();
-                    pout.println("Date (DAY/MONTH/YEAR): ");
+                    pout.println("Date (yyyy-mm-dd): ");
                     String date = bin.readLine();
                     pout.println("Start Time (HOUR:MINUTE): ");
                     String startTime = bin.readLine();

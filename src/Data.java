@@ -2,6 +2,8 @@ import java.security.SecureRandom;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Data {
     private static Connection connection;
@@ -282,5 +284,49 @@ public class Data {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public List<Event> getAttendanceRecords(String eventName, String day, String startDate, String endDate) {
+        List<Event> attendanceRecords = new ArrayList<>();
+
+        try {
+            StringBuilder queryBuilder = new StringBuilder();
+            queryBuilder.append("SELECT * FROM EVENT_PARTICIPANT EP ");
+            queryBuilder.append("INNER JOIN EVENT E ON EP.EVENT_ID = E.ID ");
+            queryBuilder.append("INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL ");
+            queryBuilder.append("WHERE 1=1 ");
+
+            if (eventName != null && !eventName.isEmpty()) queryBuilder.append("AND E.NAME = ? ");
+            if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE = ? ");
+            if (startDate != null && !startDate.isEmpty()) queryBuilder.append("AND E.DATE >= ? ");
+            if (endDate != null && !endDate.isEmpty())queryBuilder.append("AND E.DATE <= ? ");
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
+                int parameterIndex = 1;
+
+                if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, eventName);
+                if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
+                if (startDate != null && !startDate.isEmpty()) preparedStatement.setString(parameterIndex++, startDate);
+                if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
+
+                try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                    while (resultSet.next()) {
+                        Event attendanceRecord = new Event(
+                                resultSet.getInt("ID"),
+                                resultSet.getString("NAME"),
+                                resultSet.getString("LOCAL"),
+                                resultSet.getString("DATE"),
+                                resultSet.getString("BEGINHOUR"),
+                                resultSet.getString("ENDHOUR")
+                        );
+                        attendanceRecords.add(attendanceRecord);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return attendanceRecords;
     }
 }
