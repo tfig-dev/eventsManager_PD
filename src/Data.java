@@ -1,4 +1,6 @@
+import java.security.SecureRandom;
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 
 public class Data {
@@ -47,8 +49,11 @@ public class Data {
                     " LOCAL TEXT NOT NULL, " +
                     " DATE TEXT NOT NULL, " +
                     " BEGINHOUR TEXT NOT NULL, " +
-                    " ENDHOUR TEXT NOT NULL)";
+                    " ENDHOUR TEXT NOT NULL," +
+                    " CODE TEXT," +
+                    " CODEEXPIRATIONTIME TIME)";
             stmt.executeUpdate(events);
+
             stmt.close();
         } catch ( Exception e ) {
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
@@ -158,5 +163,50 @@ public class Data {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String generateCode() {
+        final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        final int CODE_LENGTH = 5;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder codeBuilder = new StringBuilder();
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int randomIndex = random.nextInt(CHARACTERS.length());
+            char randomChar = CHARACTERS.charAt(randomIndex);
+            codeBuilder.append(randomChar);
+        }
+
+        return codeBuilder.toString();
+    }
+
+    public boolean updateCode(int eventID, int minutes) {
+        String selectQuery = "SELECT * FROM EVENT WHERE ID = ?";
+        try (PreparedStatement selectStatement = connection.prepareStatement(selectQuery)) {
+            selectStatement.setInt(1, eventID);
+            try (ResultSet resultSet = selectStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    String updateQuery = "UPDATE EVENT SET CODE = ?, CODEEXPIRATIONTIME = ? WHERE ID = ?";
+                    try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
+                        updateStatement.setString(1, generateCode());
+                        updateStatement.setString(2, String.valueOf(LocalDateTime.now().plusMinutes(minutes)));
+
+                        int rowsUpdated = updateStatement.executeUpdate();
+
+                        if (rowsUpdated > 0) return true;
+                        else return false;
+                    }
+                } else
+                    return false;
+                }
+        } catch (SQLException e) {
+            return false;
+        }
+    }
+
+    public String checkEvent(String eventCode) {
+        //TODO
+        return "";
     }
 }
