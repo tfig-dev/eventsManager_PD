@@ -39,7 +39,11 @@ public class User {
 
     @Override
     public String toString() {
-        return "Name: " + name + "\nNIF: " + nif + "\nEmail: " + email;
+        return "User{" +
+                "Email=" + email +
+                ", name='" + name + '\'' +
+                ", nif='" + nif + '\'' +
+                "}\n";
     }
 
     public boolean isAdmin() {

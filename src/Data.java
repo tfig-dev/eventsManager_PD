@@ -75,11 +75,15 @@ public class Data {
 
             String insertDefaultUsers = "INSERT OR IGNORE INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES " +
                     "('admin', 'admin', 'admin', 123456789, 1), " +
-                    "('user', 'user', 'user', 987654321, 0)";
+                    "('user@isec.pt', 'user', 'user', 987654321, 0), " +
+                    "('user2@isec.pt', 'user2', 'user2', 123333333, 0)";
             stmt.executeUpdate(insertDefaultUsers);
 
             String insertDefaultParticipations = "INSERT OR IGNORE INTO EVENT_PARTICIPANT (EVENT_ID, USER_EMAIL) VALUES " +
-                    "(1, 'user')";
+                    "(1, 'user@isec.pt'), " +
+                    "(2, 'user@isec.pt'), " +
+                    "(1, 'user2@isec.pt')";
+
             stmt.executeUpdate(insertDefaultParticipations);
 
             stmt.close();
@@ -461,20 +465,48 @@ public class Data {
         }
     }
 
-    public String getRecords(int eventID) {
-        StringBuilder records = new StringBuilder();
-        String query = "SELECT * FROM EVENT_PARTICIPANT WHERE EVENT_ID = ?";
+    public List<User> getRecords(int eventID) {
+        List<User> records = new ArrayList<>();
+        String query = "SELECT U.* FROM EVENT_PARTICIPANT EP " +
+                "INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL " +
+                "WHERE EP.EVENT_ID = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, eventID);
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {
-                    String email = resultSet.getString("USER_EMAIL");
-                    records.append(email).append("\n");
+                    User user = new User(
+                            resultSet.getString("NAME"),
+                            resultSet.getInt("NIF"),
+                            resultSet.getString("EMAIL"),
+                            resultSet.getString("PASSWORD"),
+                            resultSet.getBoolean("ISADMIN")
+                    );
+                    records.add(user);
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return records.toString();
+        return records;
+    }
+
+    public boolean saveRecords(List<User> users, User loggedUser) {
+        if (users == null || users.isEmpty()) return false;
+
+        String file = "src/datafiles/" + loggedUser.getName() + "_records" + ".csv";
+        try (PrintWriter printWriter = new PrintWriter(file)) {
+            printWriter.println("EMAIL,NAME");
+            for (User user : users) printWriter.println(userToCSV(user));
+            return true;
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    private String userToCSV(User user) {
+        return String.format("%s,%s",
+                user.getEmail(),
+                user.getName());
     }
 }

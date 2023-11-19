@@ -47,6 +47,7 @@ public class Server {
         private final Socket clientSocket;
         private User loggedUser;
         List<Event> events = new ArrayList<>();
+        List<User> users = new ArrayList<>();
 
         public ClientHandler(Socket clientSocket) /*throws SocketException*/ {
             this.clientSocket = clientSocket;
@@ -280,6 +281,7 @@ public class Server {
         private void adminInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException{
             String choice;
             String parameter;
+            String records = null;
             int eventID;
 
             switch(userInput) {
@@ -417,10 +419,13 @@ public class Server {
                 case "6":
                     pout.println("Enter event ID: ");
                     eventID = Integer.parseInt(bin.readLine());
-                    if(data.getRecords(eventID).isEmpty() || data.getRecords(eventID) == null) pout.println("There are no participants in this event");
-                    else pout.println(data.getRecords(eventID));
+                    users = data.getRecords(eventID);
+                    if(users != null && !users.isEmpty()) pout.println(users);
+                    else pout.println("There are no participants in this event");
                     break;
                 case "7":
+                    if(data.saveRecords(users, loggedUser)) pout.println("CSV file generated successfully");
+                    else pout.println("You must first get an output from option 6");
                     break;
                 default:
                     pout.println("Invalid option");
