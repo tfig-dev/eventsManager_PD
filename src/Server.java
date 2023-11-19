@@ -415,6 +415,12 @@ public class Server {
                     else pout.println("Event does not exist");
                     break;
                 case "6":
+                    pout.println("Enter event ID: ");
+                    eventID = Integer.parseInt(bin.readLine());
+                    if(data.getRecords(eventID).isEmpty() || data.getRecords(eventID) == null) pout.println("There are no participants in this event");
+                    else pout.println(data.getRecords(eventID));
+                    break;
+                case "7":
                     break;
                 default:
                     pout.println("Invalid option");

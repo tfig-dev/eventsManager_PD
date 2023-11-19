@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class Data {
     private static Connection connection;
@@ -458,5 +459,22 @@ public class Data {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public String getRecords(int eventID) {
+        StringBuilder records = new StringBuilder();
+        String query = "SELECT * FROM EVENT_PARTICIPANT WHERE EVENT_ID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, eventID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    String email = resultSet.getString("USER_EMAIL");
+                    records.append(email).append("\n");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return records.toString();
     }
 }
