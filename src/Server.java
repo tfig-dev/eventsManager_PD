@@ -444,6 +444,22 @@ public class Server {
                     if(data.saveAttendanceRecords(events, loggedUser)) pout.println("CSV file generated successfully");
                     else pout.println("You must first get an output from option 8");
                     break;
+                case "10":
+                    pout.println("Enter event ID: ");
+                    eventID = Integer.parseInt(bin.readLine());
+                    pout.println("Enter user email: ");
+                    parameter = bin.readLine();
+                    if(data.deleteParticipant(eventID, parameter)) pout.println("Participant deleted successfully");
+                    else pout.println("There was an error deleting the participant / Participant or event does not exist");
+                    break;
+                case "11":
+                    pout.println("Enter event ID: ");
+                    eventID = Integer.parseInt(bin.readLine());
+                    pout.println("Enter user email: ");
+                    parameter = bin.readLine();
+                    if(data.addParticipant(eventID, parameter)) pout.println("Participant added successfully");
+                    else pout.println("There was an error adding the participant / Participant or event does not exist");
+                    break;
                 case "12":
                     loggedUser = null;
                     break;

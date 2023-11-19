@@ -245,7 +245,6 @@ public class Data {
 
     public String checkEvent(String eventCode, User loggedUser) {
         try {
-            // Check if the event with the given code exists
             String selectEventQuery = "SELECT * FROM EVENT WHERE CODE = ?";
             try (PreparedStatement selectEventStatement = connection.prepareStatement(selectEventQuery)) {
                 selectEventStatement.setString(1, eventCode);
@@ -554,6 +553,49 @@ public class Data {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 return resultSet.next();
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean checkIfEventExists(int eventID) {
+        String query = "SELECT * FROM EVENT WHERE ID = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, eventID);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean deleteParticipant(int eventID, String parameter) {
+        if(!checkIfUserExists(parameter) || !checkIfEventExists(eventID)) return false;
+
+        String query = "DELETE FROM EVENT_PARTICIPANT WHERE EVENT_ID = ? AND USER_EMAIL = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, eventID);
+            preparedStatement.setString(2, parameter);
+            int rowsAffected = preparedStatement.executeUpdate();
+            return rowsAffected > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public boolean addParticipant(int eventID, String parameter) {
+        if(!checkIfUserExists(parameter) || !checkIfEventExists(eventID)) return false;
+
+        String query = "INSERT INTO EVENT_PARTICIPANT (EVENT_ID, USER_EMAIL) VALUES (?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, eventID);
+            preparedStatement.setString(2, parameter);
+            preparedStatement.executeUpdate();
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
