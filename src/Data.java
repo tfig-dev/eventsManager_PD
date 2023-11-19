@@ -76,7 +76,8 @@ public class Data {
             String insertDefaultUsers = "INSERT OR IGNORE INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES " +
                     "('admin', 'admin', 'admin', 123456789, 1), " +
                     "('user@isec.pt', 'user', 'user', 987654321, 0), " +
-                    "('user2@isec.pt', 'user2', 'user2', 123333333, 0)";
+                    "('user2@isec.pt', 'user2', 'user2', 987654321, 0), " +
+                    "('user3@isec.pt', 'user3', 'user3', 123333333, 0)";
             stmt.executeUpdate(insertDefaultUsers);
 
             String insertDefaultParticipations = "INSERT OR IGNORE INTO EVENT_PARTICIPANT (EVENT_ID, USER_EMAIL) VALUES " +
@@ -379,9 +380,13 @@ public class Data {
     }
 
     public boolean saveAttendanceRecords(List<Event> events, User loggedUser) {
+        String file;
+
         if(events.isEmpty()) return false;
 
-        String file = "src/datafiles/output_" + loggedUser.getName() + ".csv";
+        if(loggedUser.isAdmin()) file = "src/datafiles/" + loggedUser.getName() + "_events" + ".csv";
+        else file = "src/datafiles/output_" + loggedUser.getName() + ".csv";
+
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.println("ID,NAME,LOCAL,DATE,BEGINHOUR,ENDHOUR");
             for (Event event : events) {
@@ -508,5 +513,50 @@ public class Data {
         return String.format("%s,%s",
                 user.getEmail(),
                 user.getName());
+    }
+
+    public List<Event> getAttendanceEmailRecords(String parameter) {
+        List<Event> attendanceRecords = new ArrayList<>();
+
+        String query = "SELECT * FROM EVENT_PARTICIPANT EP " +
+                "INNER JOIN EVENT E ON EP.EVENT_ID = E.ID " +
+                "INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL " +
+                "WHERE U.EMAIL = ?";
+
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, parameter);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    Event attendanceRecord = new Event(
+                            resultSet.getInt("ID"),
+                            resultSet.getString("NAME"),
+                            resultSet.getString("LOCAL"),
+                            resultSet.getString("DATE"),
+                            resultSet.getString("BEGINHOUR"),
+                            resultSet.getString("ENDHOUR")
+                    );
+
+                    attendanceRecords.add(attendanceRecord);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return attendanceRecords;
+    }
+
+    public boolean checkIfUserExists(String parameter) {
+        String query = "SELECT * FROM USER WHERE EMAIL = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, parameter);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                return resultSet.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

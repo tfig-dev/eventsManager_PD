@@ -268,6 +268,7 @@ public class Server {
                 case "4":
                     if(data.saveAttendanceRecords(events, loggedUser)) pout.println("CSV file generated successfully");
                     else pout.println("You must first get an output from option 3");
+                    events = null;
                     break;
                 case "5":
                     loggedUser = null;
@@ -281,7 +282,6 @@ public class Server {
         private void adminInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException{
             String choice;
             String parameter;
-            String records = null;
             int eventID;
 
             switch(userInput) {
@@ -426,6 +426,26 @@ public class Server {
                 case "7":
                     if(data.saveRecords(users, loggedUser)) pout.println("CSV file generated successfully");
                     else pout.println("You must first get an output from option 6");
+                    users = null;
+                    break;
+                case "8":
+                    pout.println("Enter user email: ");
+                    parameter = bin.readLine();
+
+                    if(data.checkIfUserExists(parameter)) {
+                        events = data.getAttendanceEmailRecords(parameter);
+                        if(events != null && !events.isEmpty()) pout.println(events);
+                        else pout.println("This user has no participated in any event");
+                        break;
+                    }
+                    pout.println("This user does not exist");
+                    break;
+                case "9":
+                    if(data.saveAttendanceRecords(events, loggedUser)) pout.println("CSV file generated successfully");
+                    else pout.println("You must first get an output from option 8");
+                    break;
+                case "12":
+                    loggedUser = null;
                     break;
                 default:
                     pout.println("Invalid option");
