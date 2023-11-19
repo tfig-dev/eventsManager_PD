@@ -333,7 +333,7 @@ public class Data {
                 e.printStackTrace();
             }
         }
-        else if(admin) {
+        else {
             try {
                 StringBuilder queryBuilder = new StringBuilder();
                 queryBuilder.append("SELECT * FROM EVENT");

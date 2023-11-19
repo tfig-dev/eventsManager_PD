@@ -1,12 +1,12 @@
 public class Event {
     private final int ID;
-    private String name;
-    private String location;
-    private String date;
-    private String startTime;
-    private String endTime;
-    private String code;
-    private String endHour;
+    private final String name;
+    private final String location;
+    private final String date;
+    private final String startTime;
+    private final String endTime;
+    private final String code;
+    private final String endHour;
 
     public Event(int ID, String name, String location, String date, String startTime, String endTime) {
         this.ID = ID;

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Server {
-    static Data data = new Data();
+    static final Data data = new Data();
 
     public static void main(String[] args) {
         int listeningPort;
@@ -48,7 +48,7 @@ public class Server {
         private User loggedUser;
         List<Event> events = new ArrayList<>();
 
-        public ClientHandler(Socket clientSocket) throws SocketException {
+        public ClientHandler(Socket clientSocket) /*throws SocketException*/ {
             this.clientSocket = clientSocket;
             this.loggedUser = null;
             //this.clientSocket.setSoTimeout(10000); POR ENQUANTO NAO METER ISTO

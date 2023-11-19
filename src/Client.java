@@ -48,7 +48,7 @@ public class Client {
     }
 
     static class ResponseHandler implements Runnable {
-        private Socket socket;
+        private final Socket socket;
 
         public ResponseHandler(Socket socket) {
             this.socket = socket;
