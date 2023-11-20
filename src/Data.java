@@ -6,24 +6,23 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class Data {
     private static Connection connection;
 
-    public Data() {
-        connect();
+    public Data(String location) {
+        connect(location);
         createTables();
     }
 
-    private static void connect(){
+    private static void connect(String location){
         try {
             Class.forName("org.sqlite.JDBC");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
 
-        String url = "jdbc:sqlite:src/datafiles/database.db";
+        String url = "jdbc:sqlite:" + location + "/database.db";
         try {
             connection = DriverManager.getConnection(url);
         } catch (SQLException e) {

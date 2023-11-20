@@ -1,24 +1,45 @@
 import java.io.*;
 import java.net.*;
+import java.rmi.AlreadyBoundException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Server {
-    static final Data data = new Data();
+public class Server extends UnicastRemoteObject implements ServerInterface {
+    static Data data;
+
+    public Server() throws RemoteException {}
 
     public static void main(String[] args) {
         int listeningPort;
+        String pathBD, rmiServerName;
+        int rmiServerPort;
 
-        if (args.length != 1) {
-            System.out.println("Sintaxe: java Servidor listeningPort");
+        if (args.length != 4) {
+            System.out.println("Sintaxe: java Servidor listeningPort pathBD rmiServerName rmiServerPort");
             return;
         }
 
         try {
             listeningPort = Integer.parseInt(args[0]);
+            pathBD = args[1];
+            rmiServerName = args[2];
+            rmiServerPort = Integer.parseInt(args[3]);
+
+            data = new Data(pathBD);
+            LocateRegistry.createRegistry(rmiServerPort);
+            Server server = new Server();
+            Naming.bind("rmi://localhost/" + rmiServerName, server);
+            System.out.println("Servidor RMI iniciado");
+
         } catch (NumberFormatException e) {
             System.out.println("O porto de escuta deve ser um inteiro positivo.");
             return;
+        } catch (RemoteException | AlreadyBoundException | MalformedURLException e) {
+            throw new RuntimeException(e);
         }
 
         try (ServerSocket serverSocket = new ServerSocket(listeningPort)) {
@@ -42,6 +63,8 @@ public class Server {
             data.closeConnection();
         }
     }
+
+
 
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
