@@ -7,11 +7,15 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Observer;
 
 public class Server extends UnicastRemoteObject implements ServerInterface {
     static Data data;
+    List<ObserverInterface> backupServers;
 
-    public Server() throws RemoteException {}
+    public Server() throws RemoteException {
+        backupServers = new ArrayList<>();
+    }
 
     public static void main(String[] args) {
         int listeningPort;
@@ -490,6 +494,22 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     pout.println("Invalid option");
                     break;
             }
+        }
+    }
+
+    @Override
+    public void addObserver(ObserverInterface backupServer) throws RemoteException {
+        synchronized (backupServers) {
+            if(backupServers.contains(backupServer)) backupServers.add(backupServer);
+            System.out.println("Added backupServer");
+        }
+    }
+
+    @Override
+    public void removeObserver(ObserverInterface backupServer) throws RemoteException {
+        synchronized (backupServers) {
+            if(backupServers.contains(backupServer)) backupServers.remove(backupServer);
+            System.out.println("Removed backupServer");
         }
     }
 }
