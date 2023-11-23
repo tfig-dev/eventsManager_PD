@@ -7,15 +7,10 @@ import java.io.FileOutputStream;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Observer extends UnicastRemoteObject implements ObserverInterface {
-    private Data data;
+    private final Data data;
     public Observer(String pathName) throws java.rmi.RemoteException {
         super();
         data = new Data(pathName);
-    }
-
-    @Override
-    public void updateDatabase(String operation) throws RemoteException {
-        System.out.println("I probably should update the database here....");
     }
 
     private static void saveDatabaseLocally(byte[] content, String filepath) {
@@ -24,6 +19,12 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Override
+    public void updateNewUser(User newUser) throws RemoteException {
+        if(data.registerUser(newUser)) System.out.println("A new user was registered");
+        else System.out.println("A new user was not registered");
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {
@@ -44,11 +45,14 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
             return;
         }
 
+        /* UNCOMMENT THIS AFTER
         String[] files = directory.list();
         if (files != null && files.length > 0) {
             System.out.println(databaseDirectory + " is not empty.");
             return;
         }
+
+         */
 
         String objectUrl = "rmi://localhost/eventsManager_PD";
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);

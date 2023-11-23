@@ -18,6 +18,7 @@ public class Data {
     private static void connect(String location){
         try {
             Class.forName("org.sqlite.JDBC");
+            System.out.println(location);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -126,7 +127,9 @@ public class Data {
 
             ResultSet resultSet = preparedStatement.executeQuery();
 
-            if (resultSet.next()) return false;
+            if (resultSet.next()) {
+                return false;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
