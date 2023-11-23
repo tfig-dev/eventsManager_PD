@@ -23,13 +23,16 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {
-        if(args.length != 1) {
+        if(args.length != 2) {
             System.out.println("Deve passar 1 argumento na linha de comandos: ");
             System.out.println("1 - diretoria onde a base de dados sera guardada (tem que estar vazia)");
+            System.out.println("2 - nome da base de dados");
             System.exit(1);
         }
 
         String databaseDirectory = args[0];
+        String databaseName = args[1];
+
         File directory = new File(databaseDirectory);
 
         if (!directory.isDirectory()) {
@@ -47,7 +50,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
 
         byte[] databaseContent = mainServer.getCompleteDatabase();
-        saveDatabaseLocally(databaseContent, databaseDirectory + "/database.db");
+        saveDatabaseLocally(databaseContent, databaseDirectory + "/" + databaseName + ".db");
 
         ObserverInterface observer = new Observer();
         System.out.println("Servico Observer criado e em execucao");
