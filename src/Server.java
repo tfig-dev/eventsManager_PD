@@ -6,12 +6,12 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Observer;
 
 public class Server extends UnicastRemoteObject implements ServerInterface {
     static Data data;
-    List<ObserverInterface> backupServers;
+    static List<ObserverInterface> backupServers;
 
     public Server() throws RemoteException {
         backupServers = new ArrayList<>();
@@ -181,7 +181,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     NIF = Integer.parseInt(bin.readLine());
 
                     User newUser = new User(name, NIF, email, password);
-                    if(data.registerUser(newUser)) pout.println("Registration successful");
+                    if(data.registerUser(newUser)) {
+                        pout.println("Registration successful");
+                        updateObservers();
+                    }
                     else pout.println("Registration failed");
                     break;
                 case "3":
@@ -500,7 +503,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void addObserver(ObserverInterface backupServer) throws RemoteException {
         synchronized (backupServers) {
-            if(backupServers.contains(backupServer)) backupServers.add(backupServer);
+            if(!backupServers.contains(backupServer)) backupServers.add(backupServer);
             System.out.println("Added backupServer");
         }
     }
@@ -510,6 +513,17 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         synchronized (backupServers) {
             if(backupServers.contains(backupServer)) backupServers.remove(backupServer);
             System.out.println("Removed backupServer");
+        }
+    }
+
+    protected static void updateObservers() {
+        for (ObserverInterface backupServer : backupServers) {
+            try {
+                backupServer.updateDatabase();
+                System.out.println("Sent update to backupServer");
+            } catch (RemoteException e) {
+                System.out.println("observador inacessivel.");
+            }
         }
     }
 }

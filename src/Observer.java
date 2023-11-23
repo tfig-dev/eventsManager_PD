@@ -8,8 +8,8 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     public Observer() throws java.rmi.RemoteException {}
 
     @Override
-    public void notifyNewChanges(String description) throws RemoteException {
-        System.out.println(description);
+    public void updateDatabase() throws RemoteException {
+        System.out.println("I probably should update the database here....");
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {
@@ -21,8 +21,10 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         }
 
         String databaseDirectory = args[0];
+        */
 
-         */
+        String databaseDirectory = "src/datafiles/backups/server1";
+
 
         String objectUrl = "rmi://localhost/eventsManager_PD";
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
@@ -32,10 +34,12 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         mainServer.addObserver(observer);
         System.out.println("Observer registado no servidor");
 
+        /*
         System.out.println("<Enter> para terminar");
         System.out.println();
         System.in.read();
         mainServer.removeObserver(observer);
         UnicastRemoteObject.unexportObject(observer, true);
+        */
     }
 }
