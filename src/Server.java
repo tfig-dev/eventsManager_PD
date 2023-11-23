@@ -355,7 +355,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     String endTime = bin.readLine();
                     try {
                         databaseLock.lock();
-                        if(data.createEvent(eventName, local, date, startTime, endTime)) pout.println("Event created successfully");
+                        Event newEvent = new Event(eventName, local, date, startTime, endTime);
+                        if(data.createEvent(newEvent)) pout.println("Event created successfully");
                         else pout.println("There was an error creating the event");
                     } finally {databaseLock.unlock();}
                     break;
@@ -588,6 +589,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
     }
 
+    /*
     protected static void updateObservers() {
         for (ObserverInterface backupServer : backupServers) {
             try {
@@ -598,6 +600,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             }
         }
     }
+
+     */
 
     @Override
     public byte[] getCompleteDatabase() throws RemoteException {

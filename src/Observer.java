@@ -7,10 +7,14 @@ import java.io.FileOutputStream;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Observer extends UnicastRemoteObject implements ObserverInterface {
-    public Observer() throws java.rmi.RemoteException {}
+    private Data data;
+    public Observer(String pathName) throws java.rmi.RemoteException {
+        super();
+        data = new Data(pathName);
+    }
 
     @Override
-    public void updateDatabase() throws RemoteException {
+    public void updateDatabase(String operation) throws RemoteException {
         System.out.println("I probably should update the database here....");
     }
 
@@ -49,10 +53,11 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         String objectUrl = "rmi://localhost/eventsManager_PD";
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
 
+        String pathName = databaseDirectory + "/" + databaseName + ".db";
         byte[] databaseContent = mainServer.getCompleteDatabase();
-        saveDatabaseLocally(databaseContent, databaseDirectory + "/" + databaseName + ".db");
+        saveDatabaseLocally(databaseContent, pathName);
 
-        ObserverInterface observer = new Observer();
+        ObserverInterface observer = new Observer(pathName);
         System.out.println("Servico Observer criado e em execucao");
 
         mainServer.addObserver(observer);

@@ -22,7 +22,7 @@ public class Data {
             throw new RuntimeException(e);
         }
 
-        String url = "jdbc:sqlite:" + location + "/database.db";
+        String url = "jdbc:sqlite:" + location;
         try {
             connection = DriverManager.getConnection(url);
         } catch (SQLException e) {
@@ -67,6 +67,7 @@ public class Data {
 
             stmt.executeUpdate(eventParticipants);
 
+            //APAGAR ISTO DEPOIS, APENAS PARA TESTES
             String insertDefaultEvents = "INSERT OR IGNORE INTO EVENT (ID, NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES " +
                     "(1, 'Ze dos leitoes', 'ISEC', '2023-11-19', '15:30', '19:30'), " +
                     "(2, 'Maria das vacas', 'ESEC', '2023-11-20', '16:30', '20:30')";
@@ -83,11 +84,11 @@ public class Data {
                     "(1, 'user@isec.pt'), " +
                     "(2, 'user@isec.pt'), " +
                     "(1, 'user2@isec.pt')";
-
             stmt.executeUpdate(insertDefaultParticipations);
+            //FIM
 
             stmt.close();
-        } catch ( Exception e ) {
+        } catch (Exception e) {
             System.err.println( e.getClass().getName() + ": " + e.getMessage() );
             System.exit(0);
         }
@@ -280,14 +281,14 @@ public class Data {
         }
     }
 
-    public boolean createEvent(String eventName, String local, String date, String startTime, String endTime) {
+    public boolean createEvent(Event event) {
         String insertEventSql = "INSERT INTO EVENT (NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertEventSql)) {
-            preparedStatement.setString(1, eventName);
-            preparedStatement.setString(2, local);
-            preparedStatement.setString(3, date);
-            preparedStatement.setString(4, startTime);
-            preparedStatement.setString(5, endTime);
+            preparedStatement.setString(1, event.getName());
+            preparedStatement.setString(2, event.getLocation());
+            preparedStatement.setString(3, event.getDate());
+            preparedStatement.setString(4, event.getStartTime());
+            preparedStatement.setString(5, event.getEndTime());
             preparedStatement.executeUpdate();
             return true;
         } catch (SQLException e) {

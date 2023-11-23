@@ -19,6 +19,17 @@ public class Event {
         this.endHour = null;
     }
 
+    public Event(String name, String location, String date, String startTime, String endTime) {
+        this.ID = -1;
+        this.name = name;
+        this.location = location;
+        this.date = date;
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.code = null;
+        this.endHour = null;
+    }
+
     @Override
     public String toString() {
         return "Event{" +
