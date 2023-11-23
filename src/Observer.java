@@ -1,3 +1,4 @@
+import java.io.File;
 import java.io.IOException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -13,8 +14,8 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         System.out.println("I probably should update the database here....");
     }
 
-    private static void saveDatabaseLocally(byte[] content) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream("src/datafiles/backups/server1/server1.db")) {
+    private static void saveDatabaseLocally(byte[] content, String filepath) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(filepath)) {
             fileOutputStream.write(content);
         } catch (Exception e) {
             e.printStackTrace();
@@ -22,7 +23,6 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {
-        /*
         if(args.length != 1) {
             System.out.println("Deve passar 1 argumento na linha de comandos: ");
             System.out.println("1 - diretoria onde a base de dados sera guardada (tem que estar vazia)");
@@ -30,13 +30,24 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         }
 
         String databaseDirectory = args[0];
-        */
+        File directory = new File(databaseDirectory);
+
+        if (!directory.isDirectory()) {
+            System.out.println(databaseDirectory + " is not a directory.");
+            return;
+        }
+
+        String[] files = directory.list();
+        if (files != null && files.length > 0) {
+            System.out.println(databaseDirectory + " is not empty.");
+            return;
+        }
 
         String objectUrl = "rmi://localhost/eventsManager_PD";
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
 
         byte[] databaseContent = mainServer.getCompleteDatabase();
-        saveDatabaseLocally(databaseContent);
+        saveDatabaseLocally(databaseContent, databaseDirectory + "/database.db");
 
         ObserverInterface observer = new Observer();
         System.out.println("Servico Observer criado e em execucao");
@@ -45,9 +56,6 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         System.out.println("Observer registado no servidor");
 
         /*
-        System.out.println("<Enter> para terminar");
-        System.out.println();
-        System.in.read();
         mainServer.removeObserver(observer);
         UnicastRemoteObject.unexportObject(observer, true);
         */
