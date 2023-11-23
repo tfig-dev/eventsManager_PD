@@ -6,12 +6,13 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Server extends UnicastRemoteObject implements ServerInterface {
     static Data data;
     static List<ObserverInterface> backupServers;
+    static private final ReentrantLock databaseLock = new ReentrantLock();
 
     public Server() throws RemoteException {
         backupServers = new ArrayList<>();
@@ -38,7 +39,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             Server server = new Server();
             Naming.bind("rmi://localhost/" + rmiServerName, server);
             System.out.println("Servidor RMI iniciado");
-
         } catch (NumberFormatException e) {
             System.out.println("O porto de escuta deve ser um inteiro positivo.");
             return;
@@ -53,7 +53,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 try {
                     Socket clientSocket = serverSocket.accept();
                     System.out.println("Cliente conectado: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort());
-                    Thread clientThread = new Thread(new ClientHandler(clientSocket));
+                    Thread clientThread = new Thread(new ClientHandler(clientSocket, databaseLock));
                     clientThread.start();
                 } catch (IOException e) {
                     System.out.println("Erro ao aceitar conexão do cliente: " + e);
@@ -68,16 +68,16 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
     }
 
-
-
     static class ClientHandler implements Runnable {
         private final Socket clientSocket;
         private User loggedUser;
         List<Event> events = new ArrayList<>();
         List<User> users = new ArrayList<>();
+        private final ReentrantLock databaseLock;
 
-        public ClientHandler(Socket clientSocket) /*throws SocketException*/ {
+        public ClientHandler(Socket clientSocket, ReentrantLock databaseLock) /*throws SocketException*/ {
             this.clientSocket = clientSocket;
+            this.databaseLock = databaseLock;
             this.loggedUser = null;
             //this.clientSocket.setSoTimeout(10000); POR ENQUANTO NAO METER ISTO
         }
@@ -98,11 +98,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         public void run() {
             try (BufferedReader bin = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                  PrintStream pout = new PrintStream(clientSocket.getOutputStream(), true)) {
-
                 String receivedMsg;
-
                 handleMenu(pout);
-
                 while ((receivedMsg = bin.readLine()) != null) {
                     handleInput(receivedMsg, bin, pout);
                     handleMenu(pout);
@@ -163,9 +160,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     pout.println("Password = ");
                     password = bin.readLine();
 
-                    loggedUser = data.authenticate(email, password);
-                    if(loggedUser != null) pout.println("Login successful");
-                    else pout.println("Login failed");
+                    try {
+                        databaseLock.lock();
+                        loggedUser = data.authenticate(email, password);
+                        if (loggedUser != null) pout.println("Login successful");
+                        else pout.println("Login failed");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "2":
                     pout.println("Name: ");
@@ -181,11 +181,13 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     NIF = Integer.parseInt(bin.readLine());
 
                     User newUser = new User(name, NIF, email, password);
-                    if(data.registerUser(newUser)) {
-                        pout.println("Registration successful");
-                        updateObservers();
-                    }
-                    else pout.println("Registration failed");
+                    try {
+                        databaseLock.lock();
+                        if (data.registerUser(newUser)) {
+                            pout.println("Registration successful");
+                        }
+                        else pout.println("Registration failed");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "3":
                     pout.println("exit");
@@ -214,26 +216,38 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         case "1":
                             pout.println("Enter new email: ");
                             String newEmail = bin.readLine();
-                            if(data.changeEmail(loggedUser, newEmail)) pout.println("Email changed successfully");
-                            else pout.println("Email already in use");
+                            try {
+                                databaseLock.lock();
+                                if (data.changeEmail(loggedUser, newEmail)) pout.println("Email changed successfully");
+                                else pout.println("Email already in use");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "2":
                             pout.println("Enter new name: ");
                             String newName = bin.readLine();
-                            if(data.changeName(loggedUser, newName)) pout.println("Name changed successfully");
-                            else pout.println("There was an error changing your name");
+                            try {
+                                databaseLock.lock();
+                                if (data.changeName(loggedUser, newName)) pout.println("Name changed successfully");
+                                else pout.println("There was an error changing your name");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "3":
                             pout.println("Enter new password: ");
                             String newPassword = bin.readLine();
-                            if(data.changePassword(loggedUser, newPassword)) pout.println("Password changed successfully");
-                            else pout.println("There was an error changing your password");
+                            try {
+                                databaseLock.lock();
+                                if(data.changePassword(loggedUser, newPassword)) pout.println("Password changed successfully");
+                                else pout.println("There was an error changing your password");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "4":
                             pout.println("Enter new NIF: ");
                             int newNIF = Integer.parseInt(bin.readLine());
-                            if(data.changeNIF(loggedUser, newNIF)) pout.println("NIF changed successfully");
-                            else pout.println("There was an error changing your NIF");
+                            try {
+                                databaseLock.lock();
+                                if (data.changeNIF(loggedUser, newNIF)) pout.println("NIF changed successfully");
+                                else pout.println("There was an error changing your NIF");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "5":
                             break;
@@ -245,7 +259,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 case "2":
                     pout.println("Enter event code: ");
                     String eventCode = bin.readLine();
-                    String status = data.checkEvent(eventCode, loggedUser);
+                    String status;
+                    try {
+                        databaseLock.lock();
+                        status = data.checkEvent(eventCode, loggedUser);
+                    } finally {databaseLock.unlock();}
                     switch (status) {
                         case "used" -> pout.println("This code was already used");
                         case "success" -> pout.println("Presence registered successfully");
@@ -268,25 +286,34 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         case "1":
                             pout.println("Enter event name: ");
                             parameter = bin.readLine();
-                            events = data.getAttendanceRecords(parameter, null,null, null, false);
-                            if(events != null && !events.isEmpty()) pout.println(events);
-                            else pout.println("There are no events with this filter");
+                            try {
+                                databaseLock.lock();
+                                events = data.getAttendanceRecords(parameter, null, null, null, false);
+                                if (events != null && !events.isEmpty()) pout.println(events);
+                                else pout.println("There are no events with this filter");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "2":
                             pout.println("Enter event date (yyyy-mm-dd): ");
                             parameter = bin.readLine();
-                            events = data.getAttendanceRecords(null, parameter,null, null, false);
-                            if(events != null && !events.isEmpty()) pout.println(events);
-                            else pout.println("There are no events with this filter");
+                            try {
+                                databaseLock.lock();
+                                events = data.getAttendanceRecords(null, parameter,null, null, false);
+                                if(events != null && !events.isEmpty()) pout.println(events);
+                                else pout.println("There are no events with this filter");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "3":
                             pout.println("Enter start date (yyyy-mm-dd): ");
                             parameter = bin.readLine();
                             pout.println("Enter end date (yyyy-mm-dd): ");
                             String secondParameter = bin.readLine();
-                            events = data.getAttendanceRecords(null, null, parameter, secondParameter, false);
-                            if(events != null && !events.isEmpty()) pout.println(events);
+                            try {
+                                databaseLock.lock();
+                                events = data.getAttendanceRecords(null, null, parameter, secondParameter, false);
+                                if(events != null && !events.isEmpty()) pout.println(events);
                             else pout.println("There are no events with this filter");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "4":
                             break;
@@ -326,8 +353,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     String startTime = bin.readLine();
                     pout.println("End Time (HOUR:MINUTE): ");
                     String endTime = bin.readLine();
-                    if(data.createEvent(eventName, local, date, startTime, endTime)) pout.println("Event created successfully");
-                    else pout.println("There was an error creating the event");
+                    try {
+                        databaseLock.lock();
+                        if(data.createEvent(eventName, local, date, startTime, endTime)) pout.println("Event created successfully");
+                        else pout.println("There was an error creating the event");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "2":
                     pout.println("Enter event ID: ");
@@ -350,32 +380,47 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         case "1":
                             pout.println("Enter new name: ");
                             parameter = bin.readLine();
-                            if(data.editEvent(eventID, parameter, null, null, null, null)) pout.println("Event edited successfully");
-                            else pout.println("There was an error editing the event");
+                            try {
+                                databaseLock.lock();
+                                if (data.editEvent(eventID, parameter, null, null, null, null)) pout.println("Event edited successfully");
+                                else pout.println("There was an error editing the event");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "2":
                             pout.println("Enter new local: ");
                             parameter = bin.readLine();
-                            if(data.editEvent(eventID, null, parameter, null, null, null)) pout.println("Event edited successfully");
-                            else pout.println("There was an error editing the event");
+                            try {
+                                databaseLock.lock();
+                                if (data.editEvent(eventID, null, parameter, null, null, null)) pout.println("Event edited successfully");
+                                else pout.println("There was an error editing the event");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "3":
                             pout.println("Enter new date (yyyy-mm-dd): ");
                             parameter = bin.readLine();
-                            if(data.editEvent(eventID, null, null, parameter, null, null)) pout.println("Event edited successfully");
-                            else pout.println("There was an error editing the event");
+                            try {
+                                databaseLock.lock();
+                                if (data.editEvent(eventID, null, null, parameter, null, null)) pout.println("Event edited successfully");
+                                else pout.println("There was an error editing the event");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "4":
                             pout.println("Enter new start time (HOUR:MINUTE): ");
                             parameter = bin.readLine();
-                            if(data.editEvent(eventID, null, null, null, parameter, null)) pout.println("Event edited successfully");
-                            else pout.println("There was an error editing the event");
+                            try {
+                                databaseLock.lock();
+                                if (data.editEvent(eventID, null, null, null, parameter, null)) pout.println("Event edited successfully");
+                                else pout.println("There was an error editing the event");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "5":
                             pout.println("Enter new end time (HOUR:MINUTE): ");
                             parameter = bin.readLine();
-                            if(data.editEvent(eventID, null, null, null, null, parameter)) pout.println("Event edited successfully");
-                            else pout.println("There was an error editing the event");
+                            try {
+                                databaseLock.lock();
+                                if (data.editEvent(eventID, null, null, null, null, parameter)) pout.println("Event edited successfully");
+                                else pout.println("There was an error editing the event");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "6":
                             break;
@@ -388,14 +433,15 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     pout.println("Enter event ID: ");
                     eventID = Integer.parseInt(bin.readLine());
 
-                    if(data.checkIfEventCanBeEdited(eventID)) {
-                        pout.println("This event already has participants. Cannot be deleted");
-                        break;
-                    }
-
-                    if(data.deleteEvent(eventID)) pout.println("Event deleted successfully");
-                    else pout.println("There was an error deleting the event");
-
+                    try {
+                        databaseLock.lock();
+                        if (data.checkIfEventCanBeEdited(eventID)) {
+                            pout.println("This event already has participants. Cannot be deleted");
+                            break;
+                        }
+                        if (data.deleteEvent(eventID)) pout.println("Event deleted successfully");
+                        else pout.println("There was an error deleting the event");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "4":
                     pout.println("Events filter: ");
@@ -411,25 +457,34 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         case "1":
                             pout.println("Enter event name: ");
                             parameter = bin.readLine();
-                            events = data.getAttendanceRecords(parameter, null,null, null, true);
-                            if(events != null && !events.isEmpty()) pout.println(events);
-                            else pout.println("There are no events with this filter");
+                            try {
+                                databaseLock.lock();
+                                events = data.getAttendanceRecords(parameter, null, null, null, true);
+                                if (events != null && !events.isEmpty()) pout.println(events);
+                                else pout.println("There are no events with this filter");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "2":
                             pout.println("Enter event date (yyyy-mm-dd): ");
                             parameter = bin.readLine();
-                            events = data.getAttendanceRecords(null, parameter,null, null, true);
-                            if(events != null && !events.isEmpty()) pout.println(events);
-                            else pout.println("There are no events with this filter");
+                            try {
+                                databaseLock.lock();
+                                events = data.getAttendanceRecords(null, parameter, null, null, true);
+                                if (events != null && !events.isEmpty()) pout.println(events);
+                                else pout.println("There are no events with this filter");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "3":
                             pout.println("Enter start date (yyyy-mm-dd): ");
                             parameter = bin.readLine();
                             pout.println("Enter end date (yyyy-mm-dd): ");
                             String secondParameter = bin.readLine();
-                            events = data.getAttendanceRecords(null, null, parameter, secondParameter, true);
-                            if(events != null && !events.isEmpty()) pout.println(events);
-                            else pout.println("There are no events with this filter");
+                            try {
+                                databaseLock.lock();
+                                events = data.getAttendanceRecords(null, null, parameter, secondParameter, true);
+                                if (events != null && !events.isEmpty()) pout.println(events);
+                                else pout.println("There are no events with this filter");
+                            } finally {databaseLock.unlock();}
                             break;
                         case "4":
                             break;
@@ -443,15 +498,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     eventID = Integer.parseInt(bin.readLine());
                     pout.println("Enter code duration (minutes): ");
                     int codeDuration = Integer.parseInt(bin.readLine());
-                    if(data.updateCode(eventID, codeDuration)) pout.println("Code generated successfully");
-                    else pout.println("Event does not exist");
+                    try {
+                        databaseLock.lock();
+                        if (data.updateCode(eventID, codeDuration)) pout.println("Code generated successfully");
+                        else pout.println("Event does not exist");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "6":
                     pout.println("Enter event ID: ");
                     eventID = Integer.parseInt(bin.readLine());
-                    users = data.getRecords(eventID);
-                    if(users != null && !users.isEmpty()) pout.println(users);
-                    else pout.println("There are no participants in this event");
+                    try {
+                        databaseLock.lock();
+                        users = data.getRecords(eventID);
+                        if (users != null && !users.isEmpty()) pout.println(users);
+                        else pout.println("There are no participants in this event");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "7":
                     if(data.saveRecords(users, loggedUser)) pout.println("CSV file generated successfully");
@@ -461,11 +522,13 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 case "8":
                     pout.println("Enter user email: ");
                     parameter = bin.readLine();
-
                     if(data.checkIfUserExists(parameter)) {
-                        events = data.getAttendanceEmailRecords(parameter);
-                        if(events != null && !events.isEmpty()) pout.println(events);
-                        else pout.println("This user has no participated in any event");
+                        try {
+                            databaseLock.lock();
+                            events = data.getAttendanceEmailRecords(parameter);
+                            if (events != null && !events.isEmpty()) pout.println(events);
+                            else pout.println("This user has no participated in any event");
+                        } finally {databaseLock.unlock();}
                         break;
                     }
                     pout.println("This user does not exist");
@@ -479,16 +542,25 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     eventID = Integer.parseInt(bin.readLine());
                     pout.println("Enter user email: ");
                     parameter = bin.readLine();
-                    if(data.deleteParticipant(eventID, parameter)) pout.println("Participant deleted successfully");
-                    else pout.println("There was an error deleting the participant / Participant or event does not exist");
+                    try {
+                        databaseLock.lock();
+                        if (data.deleteParticipant(eventID, parameter))
+                            pout.println("Participant deleted successfully");
+                        else
+                            pout.println("There was an error deleting the participant / Participant or event does not exist");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "11":
                     pout.println("Enter event ID: ");
                     eventID = Integer.parseInt(bin.readLine());
                     pout.println("Enter user email: ");
                     parameter = bin.readLine();
-                    if(data.addParticipant(eventID, parameter)) pout.println("Participant added successfully");
-                    else pout.println("There was an error adding the participant / Participant or event does not exist");
+                    try {
+                        databaseLock.lock();
+                        if (data.addParticipant(eventID, parameter)) pout.println("Participant added successfully");
+                        else
+                            pout.println("There was an error adding the participant / Participant or event does not exist");
+                    } finally {databaseLock.unlock();}
                     break;
                 case "12":
                     loggedUser = null;
@@ -524,6 +596,22 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             } catch (RemoteException e) {
                 System.out.println("observador inacessivel.");
             }
+        }
+    }
+
+    @Override
+    public byte[] getCompleteDatabase() throws RemoteException {
+        try {
+            databaseLock.lock();
+            try (FileInputStream fileInputStream = new FileInputStream(new File("src/datafiles/database.db"))) {
+                byte[] databaseContent = new byte[(int) fileInputStream.available()];
+                fileInputStream.read(databaseContent);
+                return databaseContent;
+            } catch (IOException e) {
+                throw new RemoteException("Error reading the database file", e);
+            }
+        } finally {
+            databaseLock.unlock();
         }
     }
 }
