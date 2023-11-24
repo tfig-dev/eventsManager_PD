@@ -13,6 +13,8 @@ import java.rmi.server.UnicastRemoteObject;
 
 public class Observer extends UnicastRemoteObject implements ObserverInterface {
     private Data data;
+    private ServerInterface mainServer;
+
     public Observer() throws java.rmi.RemoteException {}
 
     @Override
@@ -138,6 +140,11 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         else System.out.println("Error updating the database");
     }
 
+    @Override
+    public int getVersion() throws RemoteException {
+        return data.getVersion();
+    }
+
     public static void main(String[] args) throws IOException, NotBoundException {
         if(args.length != 2) {
             System.out.println("Deve passar 1 argumento na linha de comandos: ");
@@ -166,25 +173,19 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
 
          */
 
+        Observer observer = new Observer();
+
         String objectUrl = "rmi://localhost/eventsManager_PD";
-        ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
-
+        observer.mainServer = (ServerInterface) Naming.lookup(objectUrl);
         String pathName = databaseDirectory + "/" + databaseName;
+        byte[] databaseContent = observer.mainServer.getCompleteDatabase();
 
-        byte[] databaseContent = mainServer.getCompleteDatabase();
-
-        ObserverInterface observer = new Observer();
         observer.saveDatabaseLocally(databaseContent, pathName);
         observer.createData(pathName);
 
         System.out.println("Servico pt.isec.brago.eventsManager.Observer criado e em execucao");
 
-        mainServer.addObserver(observer);
+        observer.mainServer.addObserver(observer);
         System.out.println("pt.isec.brago.eventsManager.Observer registado no servidor");
-
-        /*
-        mainServer.removeObserver(observer);
-        UnicastRemoteObject.unexportObject(observer, true);
-        */
     }
 }

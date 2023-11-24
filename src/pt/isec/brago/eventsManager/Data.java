@@ -67,6 +67,13 @@ public class Data {
 
             stmt.executeUpdate(eventParticipants);
 
+            String createTable = "CREATE TABLE IF NOT EXISTS VERSION " +
+                    "(VERSION INT NOT NULL DEFAULT 0)";
+            stmt.executeUpdate(createTable);
+
+            String insertRow = "INSERT INTO VERSION (VERSION) SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM VERSION)";
+            stmt.executeUpdate(insertRow);
+
             //APAGAR ISTO DEPOIS, APENAS PARA TESTES
             String insertDefaultEvents = "INSERT OR IGNORE INTO EVENT (ID, NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES " +
                     "(1, 'Ze dos leitoes', 'ISEC', '2023-11-19', '15:30', '19:30'), " +
@@ -593,5 +600,30 @@ public class Data {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public void updateVersion() {
+        String updateVersionQuery = "UPDATE VERSION SET VERSION = VERSION + 1";
+
+        try (PreparedStatement updateVersionStatement = connection.prepareStatement(updateVersionQuery)) {
+            updateVersionStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public int getVersion() {
+        String selectVersionQuery = "SELECT VERSION FROM VERSION";
+
+        try (PreparedStatement selectVersionStatement = connection.prepareStatement(selectVersionQuery)) {
+            try (ResultSet resultSet = selectVersionStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("VERSION");
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return -1;
     }
 }

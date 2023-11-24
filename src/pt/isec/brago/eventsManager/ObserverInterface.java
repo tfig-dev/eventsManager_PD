@@ -22,4 +22,5 @@ public interface ObserverInterface extends Remote {
     void updateCodeGeneration(int eventID, int codeDuration) throws RemoteException;
     void updateParticipantDeletion(int eventID, String email) throws RemoteException;
     void updateParticipantAddition(int eventID, String email) throws RemoteException;
+    int getVersion() throws RemoteException;
 }
