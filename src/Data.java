@@ -8,14 +8,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Data {
-    private static Connection connection;
+    private Connection connection;
 
     public Data(String location) {
         connect(location);
         createTables();
     }
 
-    private static void connect(String location){
+    private void connect(String location){
         try {
             Class.forName("org.sqlite.JDBC");
             System.out.println(location);
@@ -31,7 +31,7 @@ public class Data {
         }
     }
 
-    private static void createTables() {
+    private void createTables() {
         Statement stmt;
 
         try {
@@ -120,6 +120,7 @@ public class Data {
     }
 
     public boolean registerUser(User newUser) {
+        System.out.println(connection);
         String query = "SELECT * FROM USER WHERE EMAIL = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {

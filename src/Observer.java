@@ -7,13 +7,21 @@ import java.io.FileOutputStream;
 import java.rmi.server.UnicastRemoteObject;
 
 public class Observer extends UnicastRemoteObject implements ObserverInterface {
-    private final Data data;
-    public Observer(String pathName) throws java.rmi.RemoteException {
-        super();
-        data = new Data(pathName);
+    private Data data;
+    public Observer() throws java.rmi.RemoteException {}
+
+
+    @Override
+    public void createData(String pathName) {
+        try {
+            data = new Data(pathName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
-    private static void saveDatabaseLocally(byte[] content, String filepath) {
+    @Override
+    public void saveDatabaseLocally(byte[] content, String filepath) {
         try (FileOutputStream fileOutputStream = new FileOutputStream(filepath)) {
             fileOutputStream.write(content);
         } catch (Exception e) {
@@ -58,10 +66,13 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
 
         String pathName = databaseDirectory + "/" + databaseName + ".db";
-        byte[] databaseContent = mainServer.getCompleteDatabase();
-        saveDatabaseLocally(databaseContent, pathName);
 
-        ObserverInterface observer = new Observer(pathName);
+        byte[] databaseContent = mainServer.getCompleteDatabase();
+
+        ObserverInterface observer = new Observer();
+        observer.saveDatabaseLocally(databaseContent, pathName);
+        observer.createData(pathName);
+
         System.out.println("Servico Observer criado e em execucao");
 
         mainServer.addObserver(observer);
