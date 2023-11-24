@@ -1,3 +1,5 @@
+package pt.isec.brago.eventsManager;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -37,7 +39,7 @@ public class Event implements Serializable {
 
     @Override
     public String toString() {
-        return "Event{" +
+        return "pt.isec.brago.eventsManager.Event{" +
                 "ID=" + ID +
                 ", name='" + name + '\'' +
                 ", location='" + location + '\'' +

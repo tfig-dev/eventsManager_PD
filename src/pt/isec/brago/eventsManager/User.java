@@ -1,3 +1,5 @@
+package pt.isec.brago.eventsManager;
+
 import java.io.Serial;
 import java.io.Serializable;
 
@@ -44,7 +46,7 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "User{" +
+        return "pt.isec.brago.eventsManager.User{" +
                 "Email=" + email +
                 ", name='" + name + '\'' +
                 ", nif='" + nif + '\'' +

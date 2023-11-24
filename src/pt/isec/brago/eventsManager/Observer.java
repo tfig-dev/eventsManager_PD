@@ -1,5 +1,10 @@
+package pt.isec.brago.eventsManager;
+
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -144,11 +149,12 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         String databaseDirectory = args[0];
         String databaseName = args[1];
 
-        File directory = new File(databaseDirectory);
-
-        if (!directory.isDirectory()) {
-            System.out.println(databaseDirectory + " is not a directory.");
-            return;
+        // Create the new folder
+        try {
+            Files.createDirectories(Paths.get(databaseDirectory));
+            System.out.println("Folder created successfully: " + Paths.get(databaseDirectory));
+        } catch (Exception e) {
+            System.err.println("Error creating folder: " + e.getMessage());
         }
 
         /* UNCOMMENT THIS AFTER
@@ -163,7 +169,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         String objectUrl = "rmi://localhost/eventsManager_PD";
         ServerInterface mainServer = (ServerInterface) Naming.lookup(objectUrl);
 
-        String pathName = databaseDirectory + "/" + databaseName + ".db";
+        String pathName = databaseDirectory + "/" + databaseName;
 
         byte[] databaseContent = mainServer.getCompleteDatabase();
 
@@ -171,10 +177,10 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         observer.saveDatabaseLocally(databaseContent, pathName);
         observer.createData(pathName);
 
-        System.out.println("Servico Observer criado e em execucao");
+        System.out.println("Servico pt.isec.brago.eventsManager.Observer criado e em execucao");
 
         mainServer.addObserver(observer);
-        System.out.println("Observer registado no servidor");
+        System.out.println("pt.isec.brago.eventsManager.Observer registado no servidor");
 
         /*
         mainServer.removeObserver(observer);

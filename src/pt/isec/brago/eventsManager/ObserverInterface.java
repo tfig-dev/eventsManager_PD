@@ -1,3 +1,5 @@
+package pt.isec.brago.eventsManager;
+
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 

@@ -1,3 +1,5 @@
+package pt.isec.brago.eventsManager;
+
 import java.io.*;
 import java.net.*;
 import java.rmi.AlreadyBoundException;
@@ -129,7 +131,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
         private void userMenu(PrintStream pout) {
             pout.println("1 - Edit Account Details");
-            pout.println("2 - Input Event Code");
+            pout.println("2 - Input pt.isec.brago.eventsManager.Event Code");
             pout.println("3 - See past participations");
             pout.println("4 - Get past participations CSV file");
             pout.println("5 - Logout");
@@ -137,11 +139,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         private void adminMenu(PrintStream pout) {
-            pout.println("1 - Create Event");
-            pout.println("2 - Edit Event");
-            pout.println("3 - Delete Event");
+            pout.println("1 - Create pt.isec.brago.eventsManager.Event");
+            pout.println("2 - Edit pt.isec.brago.eventsManager.Event");
+            pout.println("3 - Delete pt.isec.brago.eventsManager.Event");
             pout.println("4 - Check Events");
-            pout.println("5 - Generate Event Code");
+            pout.println("5 - Generate pt.isec.brago.eventsManager.Event Code");
             pout.println("6 - Check Participants");
             pout.println("7 - Get CSV File");
             pout.println("8 - Check events by user participation");
@@ -364,7 +366,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
             switch(userInput) {
                 case "1":
-                    pout.println("Event Name: ");
+                    pout.println("pt.isec.brago.eventsManager.Event Name: ");
                     String eventName = bin.readLine();
                     pout.println("Local: ");
                     String local = bin.readLine();
@@ -378,7 +380,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         databaseLock.lock();
                         Event newEvent = new Event(eventName, local, date, startTime, endTime);
                         if(server.data.createEvent(newEvent)) {
-                            pout.println("Event created successfully");
+                            pout.println("pt.isec.brago.eventsManager.Event created successfully");
                             server.notifyNewEvent(newEvent);
                         }
                         else pout.println("There was an error creating the event");
@@ -408,7 +410,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, parameter, null, null, null, null)) {
-                                    pout.println("Event edited successfully");
+                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
                                     server.notifyEventNameChange(eventID, parameter);
                                 }
                                 else pout.println("There was an error editing the event");
@@ -420,7 +422,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, parameter, null, null, null)) {
-                                    pout.println("Event edited successfully");
+                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
                                     server.notifyEventLocalChange(eventID, parameter);
                                 }
                                 else pout.println("There was an error editing the event");
@@ -432,7 +434,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, null, parameter, null, null)) {
-                                    pout.println("Event edited successfully");
+                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
                                     server.notifyEventDateChange(eventID, parameter);
                                 }
                                 else pout.println("There was an error editing the event");
@@ -444,7 +446,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, null, null, parameter, null)) {
-                                    pout.println("Event edited successfully");
+                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
                                     server.notifyEventStartTimeChange(eventID, parameter);
                                 }
                                 else pout.println("There was an error editing the event");
@@ -456,7 +458,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, null, null, null, parameter)) {
-                                    pout.println("Event edited successfully");
+                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
                                     server.notifyEventEndTimeChange(eventID, parameter);
                                 }
                                 else pout.println("There was an error editing the event");
@@ -480,7 +482,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             break;
                         }
                         if (server.data.deleteEvent(eventID)) {
-                            pout.println("Event deleted successfully");
+                            pout.println("pt.isec.brago.eventsManager.Event deleted successfully");
                             server.notifyEventDeletion(eventID);
                         }
                         else pout.println("There was an error deleting the event");
@@ -547,7 +549,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Code generated successfully");
                             server.notifyCodeGeneration(eventID, codeDuration);
                         }
-                        else pout.println("Event does not exist");
+                        else pout.println("pt.isec.brago.eventsManager.Event does not exist");
                     } finally {databaseLock.unlock();}
                     break;
                 case "6":
@@ -643,7 +645,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     public byte[] getCompleteDatabase() throws RemoteException {
         try {
             databaseLock.lock();
-            try (FileInputStream fileInputStream = new FileInputStream(new File("src/datafiles/database.db"))) {
+            String executedPATH = System.getProperty("user.dir");
+            File parentPATH = new File(executedPATH).getParentFile();
+            System.out.println(parentPATH);
+
+            try (FileInputStream fileInputStream = new FileInputStream(new File(parentPATH+"/src/pt/isec/brago/eventsManager/datafiles/database.db"))) {
                 byte[] databaseContent = new byte[(int) fileInputStream.available()];
                 fileInputStream.read(databaseContent);
                 return databaseContent;

@@ -1,3 +1,5 @@
+package pt.isec.brago.eventsManager;
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.security.SecureRandom;
@@ -374,8 +376,8 @@ public class Data {
 
         if(events.isEmpty()) return false;
 
-        if(loggedUser.isAdmin()) file = "src/datafiles/" + loggedUser.getName() + "_events" + ".csv";
-        else file = "src/datafiles/output_" + loggedUser.getName() + ".csv";
+        if(loggedUser.isAdmin()) file = "src/pt.isec.brago.eventsManager.datafiles/" + loggedUser.getName() + "_events" + ".csv";
+        else file = "src/pt.isec.brago.eventsManager.datafiles/output_" + loggedUser.getName() + ".csv";
 
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.println("ID,NAME,LOCAL,DATE,BEGINHOUR,ENDHOUR");
@@ -488,7 +490,7 @@ public class Data {
     public boolean saveRecords(List<User> users, User loggedUser) {
         if (users == null || users.isEmpty()) return false;
 
-        String file = "src/datafiles/" + loggedUser.getName() + "_records" + ".csv";
+        String file = "src/pt.isec.brago.eventsManager.datafiles/" + loggedUser.getName() + "_records" + ".csv";
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.println("EMAIL,NAME");
             for (User user : users) printWriter.println(userToCSV(user));

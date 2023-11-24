@@ -1,3 +1,5 @@
+package pt.isec.brago.eventsManager;
+
 import java.net.*;
 import java.io.*;
 import java.util.Scanner;
@@ -10,7 +12,7 @@ public class Client {
         String userInput;
 
         if (args.length != 2) {
-            System.out.println("Syntax: java Client serverAddress serverPort");
+            System.out.println("Syntax: java pt.isec.brago.eventsManager.Client serverAddress serverPort");
             return;
         }
 
@@ -43,7 +45,7 @@ public class Client {
         } catch (UnknownHostException e) {
             System.out.println("Unknown destination: " + e.getMessage());
         } catch (NumberFormatException e) {
-            System.out.println("Server port must be a positive integer.");
+            System.out.println("pt.isec.brago.eventsManager.Server port must be a positive integer.");
         }
     }
 
