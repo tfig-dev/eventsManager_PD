@@ -10,6 +10,14 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     private Data data;
     public Observer() throws java.rmi.RemoteException {}
 
+    @Override
+    public void saveDatabaseLocally(byte[] content, String filepath) {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(filepath)) {
+            fileOutputStream.write(content);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     @Override
     public void createData(String pathName) {
@@ -21,18 +29,108 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     }
 
     @Override
-    public void saveDatabaseLocally(byte[] content, String filepath) {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(filepath)) {
-            fileOutputStream.write(content);
-        } catch (Exception e) {
-            e.printStackTrace();
+    public void updateNewUser(User newUser) throws RemoteException {
+        if(data.registerUser(newUser)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEmailChange(User loggedUser, String newEmail) throws RemoteException {
+        if(data.changeEmail(loggedUser, newEmail)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateNameChange(User loggedUser, String newName) throws RemoteException {
+        if(data.changeName(loggedUser, newName)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updatePasswordChange(User loggedUser, String newPassword) throws RemoteException {
+        if(data.changePassword(loggedUser, newPassword)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateNIFChange(User loggedUser, int newNIF) throws RemoteException {
+        if(data.changeNIF(loggedUser, newNIF)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateNewAttendance(User loggedUser, String eventCode) throws RemoteException {
+        String status = data.checkEvent(eventCode, loggedUser);
+        switch (status) {
+            case "success":
+                System.out.println("Database updated successfully");
+                break;
+            case "used":
+            case "error":
+            default:
+                System.out.println("Error updating the database");
+                break;
         }
     }
 
     @Override
-    public void updateNewUser(User newUser) throws RemoteException {
-        if(data.registerUser(newUser)) System.out.println("A new user was registered");
-        else System.out.println("A new user was not registered");
+    public void updateNewEvent(Event newEvent) throws RemoteException {
+        if(data.createEvent(newEvent)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEventNameChange(int eventID, String newName) throws RemoteException {
+        if(data.editEvent(eventID, newName, null, null, null, null)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEventLocalChange(int eventID, String newLocal) throws RemoteException {
+        if(data.editEvent(eventID, null, newLocal, null, null, null)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEventDateChange(int eventID, String newDate) throws RemoteException {
+        if(data.editEvent(eventID, null, null, newDate, null, null)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEventStartTimeChange(int eventID, String newStartTime) throws RemoteException {
+        if(data.editEvent(eventID, null, null, null, newStartTime, null)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEventEndTimeChange(int eventID, String newEndTime) throws RemoteException {
+        if(data.editEvent(eventID, null, null, null, null, newEndTime)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateEventDeletion(int eventID) throws RemoteException {
+        if(data.deleteEvent(eventID)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateCodeGeneration(int eventID, int codeDuration) throws RemoteException {
+        if(data.updateCode(eventID, codeDuration)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateParticipantDeletion(int eventID, String email) throws RemoteException {
+        if(data.deleteParticipant(eventID, email)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
+    }
+
+    @Override
+    public void updateParticipantAddition(int eventID, String email) throws RemoteException {
+        if(data.addParticipant(eventID, email)) System.out.println("Database updated successfully");
+        else System.out.println("Error updating the database");
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {

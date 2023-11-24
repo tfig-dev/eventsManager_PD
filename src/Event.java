@@ -1,4 +1,9 @@
-public class Event {
+import java.io.Serial;
+import java.io.Serializable;
+
+public class Event implements Serializable {
+    @Serial
+    private static final long serialVersionUID = 1L;
     private final int ID;
     private final String name;
     private final String location;

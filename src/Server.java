@@ -224,7 +224,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             String newEmail = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.changeEmail(loggedUser, newEmail)) pout.println("Email changed successfully");
+                                if (server.data.changeEmail(loggedUser, newEmail)) {
+                                    pout.println("Email changed successfully");
+                                    server.notifyEmailChange(loggedUser, newEmail);
+                                }
                                 else pout.println("Email already in use");
                             } finally {databaseLock.unlock();}
                             break;
@@ -233,7 +236,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             String newName = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.changeName(loggedUser, newName)) pout.println("Name changed successfully");
+                                if (server.data.changeName(loggedUser, newName)) {
+                                    pout.println("Name changed successfully");
+                                    server.notifyNameChange(loggedUser, newName);
+                                }
                                 else pout.println("There was an error changing your name");
                             } finally {databaseLock.unlock();}
                             break;
@@ -242,7 +248,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             String newPassword = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if(server.data.changePassword(loggedUser, newPassword)) pout.println("Password changed successfully");
+                                if(server.data.changePassword(loggedUser, newPassword)) {
+                                    pout.println("Password changed successfully");
+                                    server.notifyPasswordChange(loggedUser, newPassword);
+                                }
                                 else pout.println("There was an error changing your password");
                             } finally {databaseLock.unlock();}
                             break;
@@ -251,7 +260,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             int newNIF = Integer.parseInt(bin.readLine());
                             try {
                                 databaseLock.lock();
-                                if (server.data.changeNIF(loggedUser, newNIF)) pout.println("NIF changed successfully");
+                                if (server.data.changeNIF(loggedUser, newNIF)) {
+                                    pout.println("NIF changed successfully");
+                                    server.notifyNIFChange(loggedUser, newNIF);
+                                }
                                 else pout.println("There was an error changing your NIF");
                             } finally {databaseLock.unlock();}
                             break;
@@ -272,7 +284,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     } finally {databaseLock.unlock();}
                     switch (status) {
                         case "used" -> pout.println("This code was already used");
-                        case "success" -> pout.println("Presence registered successfully");
+                        case "success" -> {
+                            pout.println("Presence registered successfully");
+                            server.notifyNewAttendance(loggedUser, eventCode);
+                        }
                         case "error" -> pout.println("Invalid Code");
                         default -> pout.println("Something went wrong");
                     }
@@ -362,7 +377,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     try {
                         databaseLock.lock();
                         Event newEvent = new Event(eventName, local, date, startTime, endTime);
-                        if(server.data.createEvent(newEvent)) pout.println("Event created successfully");
+                        if(server.data.createEvent(newEvent)) {
+                            pout.println("Event created successfully");
+                            server.notifyNewEvent(newEvent);
+                        }
                         else pout.println("There was an error creating the event");
                     } finally {databaseLock.unlock();}
                     break;
@@ -389,7 +407,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.editEvent(eventID, parameter, null, null, null, null)) pout.println("Event edited successfully");
+                                if (server.data.editEvent(eventID, parameter, null, null, null, null)) {
+                                    pout.println("Event edited successfully");
+                                    server.notifyEventNameChange(eventID, parameter);
+                                }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
                             break;
@@ -398,7 +419,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.editEvent(eventID, null, parameter, null, null, null)) pout.println("Event edited successfully");
+                                if (server.data.editEvent(eventID, null, parameter, null, null, null)) {
+                                    pout.println("Event edited successfully");
+                                    server.notifyEventLocalChange(eventID, parameter);
+                                }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
                             break;
@@ -407,7 +431,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.editEvent(eventID, null, null, parameter, null, null)) pout.println("Event edited successfully");
+                                if (server.data.editEvent(eventID, null, null, parameter, null, null)) {
+                                    pout.println("Event edited successfully");
+                                    server.notifyEventDateChange(eventID, parameter);
+                                }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
                             break;
@@ -416,7 +443,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.editEvent(eventID, null, null, null, parameter, null)) pout.println("Event edited successfully");
+                                if (server.data.editEvent(eventID, null, null, null, parameter, null)) {
+                                    pout.println("Event edited successfully");
+                                    server.notifyEventStartTimeChange(eventID, parameter);
+                                }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
                             break;
@@ -425,7 +455,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                if (server.data.editEvent(eventID, null, null, null, null, parameter)) pout.println("Event edited successfully");
+                                if (server.data.editEvent(eventID, null, null, null, null, parameter)) {
+                                    pout.println("Event edited successfully");
+                                    server.notifyEventEndTimeChange(eventID, parameter);
+                                }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
                             break;
@@ -446,7 +479,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("This event already has participants. Cannot be deleted");
                             break;
                         }
-                        if (server.data.deleteEvent(eventID)) pout.println("Event deleted successfully");
+                        if (server.data.deleteEvent(eventID)) {
+                            pout.println("Event deleted successfully");
+                            server.notifyEventDeletion(eventID);
+                        }
                         else pout.println("There was an error deleting the event");
                     } finally {databaseLock.unlock();}
                     break;
@@ -507,7 +543,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     int codeDuration = Integer.parseInt(bin.readLine());
                     try {
                         databaseLock.lock();
-                        if (server.data.updateCode(eventID, codeDuration)) pout.println("Code generated successfully");
+                        if (server.data.updateCode(eventID, codeDuration)) {
+                            pout.println("Code generated successfully");
+                            server.notifyCodeGeneration(eventID, codeDuration);
+                        }
                         else pout.println("Event does not exist");
                     } finally {databaseLock.unlock();}
                     break;
@@ -551,8 +590,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     parameter = bin.readLine();
                     try {
                         databaseLock.lock();
-                        if (server.data.deleteParticipant(eventID, parameter))
+                        if (server.data.deleteParticipant(eventID, parameter)) {
                             pout.println("Participant deleted successfully");
+                            server.notifyParticipantDeletion(eventID, parameter);
+                        }
                         else
                             pout.println("There was an error deleting the participant / Participant or event does not exist");
                     } finally {databaseLock.unlock();}
@@ -564,7 +605,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     parameter = bin.readLine();
                     try {
                         databaseLock.lock();
-                        if (server.data.addParticipant(eventID, parameter)) pout.println("Participant added successfully");
+                        if (server.data.addParticipant(eventID, parameter)) {
+                            pout.println("Participant added successfully");
+                            server.notifyParticipantAddition(eventID, parameter);
+                        }
                         else
                             pout.println("There was an error adding the participant / Participant or event does not exist");
                     } finally {databaseLock.unlock();}
@@ -596,6 +640,22 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     @Override
+    public byte[] getCompleteDatabase() throws RemoteException {
+        try {
+            databaseLock.lock();
+            try (FileInputStream fileInputStream = new FileInputStream(new File("src/datafiles/database.db"))) {
+                byte[] databaseContent = new byte[(int) fileInputStream.available()];
+                fileInputStream.read(databaseContent);
+                return databaseContent;
+            } catch (IOException e) {
+                throw new RemoteException("Error reading the database file", e);
+            }
+        } finally {
+            databaseLock.unlock();
+        }
+    }
+
+    @Override
     public void notifyNewUser(User newUser) {
         synchronized (backupServers) {
             for (ObserverInterface backupServer : backupServers) {
@@ -610,18 +670,212 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     @Override
-    public byte[] getCompleteDatabase() throws RemoteException {
-        try {
-            databaseLock.lock();
-            try (FileInputStream fileInputStream = new FileInputStream(new File("src/datafiles/database.db"))) {
-                byte[] databaseContent = new byte[(int) fileInputStream.available()];
-                fileInputStream.read(databaseContent);
-                return databaseContent;
-            } catch (IOException e) {
-                throw new RemoteException("Error reading the database file", e);
+    public void notifyEmailChange(User loggedUser, String newEmail) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEmailChange(loggedUser, newEmail);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
             }
-        } finally {
-            databaseLock.unlock();
+        }
+    }
+
+    @Override
+    public void notifyNameChange(User loggedUser, String newName) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateNameChange(loggedUser, newName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyPasswordChange(User loggedUser, String newPassword) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updatePasswordChange(loggedUser, newPassword);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyNIFChange(User loggedUser, int newNIF) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateNIFChange(loggedUser, newNIF);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyNewAttendance(User loggedUser, String eventCode) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateNewAttendance(loggedUser, eventCode);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyNewEvent(Event newEvent) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateNewEvent(newEvent);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyEventNameChange(int eventID, String newName) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEventNameChange(eventID, newName);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyEventLocalChange(int eventID, String newLocal) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEventLocalChange(eventID, newLocal);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyEventDateChange(int eventID, String newDate) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEventDateChange(eventID, newDate);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyEventStartTimeChange(int eventID, String newStartTime) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEventStartTimeChange(eventID, newStartTime);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyEventEndTimeChange(int eventID, String newEndTime) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEventEndTimeChange(eventID, newEndTime);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyEventDeletion(int eventID) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateEventDeletion(eventID);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyCodeGeneration(int eventID, int codeDuration) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateCodeGeneration(eventID, codeDuration);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyParticipantDeletion(int eventID, String email) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateParticipantDeletion(eventID, email);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void notifyParticipantAddition(int eventID, String email) {
+        synchronized (backupServers) {
+            for (ObserverInterface backupServer : backupServers) {
+                try {
+                    backupServer.updateParticipantAddition(eventID, email);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    System.out.println("Observador inacessivel");
+                }
+            }
         }
     }
 }
