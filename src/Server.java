@@ -192,6 +192,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             server.notifyNewUser(newUser);
                         }
                         else pout.println("Registration failed");
+
                     } finally {databaseLock.unlock();}
                     break;
                 case "3":

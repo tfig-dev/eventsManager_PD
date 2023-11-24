@@ -18,7 +18,6 @@ public class Data {
     private void connect(String location){
         try {
             Class.forName("org.sqlite.JDBC");
-            System.out.println(location);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -36,8 +35,6 @@ public class Data {
 
         try {
             Class.forName("org.sqlite.JDBC");
-            connection = DriverManager.getConnection("jdbc:sqlite:src/datafiles/database.db");
-
             stmt = connection.createStatement();
 
             String users = "CREATE TABLE IF NOT EXISTS USER " +
@@ -120,31 +117,21 @@ public class Data {
     }
 
     public boolean registerUser(User newUser) {
-        System.out.println(connection);
-        String query = "SELECT * FROM USER WHERE EMAIL = ?";
+        String query = "INSERT INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) " +
+                "SELECT ?, ?, ?, ?, ? " +
+                "WHERE NOT EXISTS (SELECT 1 FROM USER WHERE EMAIL = ?)";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setString(1, newUser.getEmail());
-
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if (resultSet.next()) {
-                return false;
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
-
-        String insertUserSql = "INSERT INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(insertUserSql)) {
             preparedStatement.setString(1, newUser.getEmail());
             preparedStatement.setString(2, newUser.getName());
             preparedStatement.setString(3, newUser.getPassword());
             preparedStatement.setInt(4, newUser.getNif());
             preparedStatement.setBoolean(5, newUser.isAdmin());
-            preparedStatement.executeUpdate();
-            return true;
+            preparedStatement.setString(6, newUser.getEmail());
+
+            int rowsAffected = preparedStatement.executeUpdate();
+
+            return rowsAffected > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
