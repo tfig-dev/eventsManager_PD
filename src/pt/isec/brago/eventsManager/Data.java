@@ -146,9 +146,23 @@ public class Data {
     }
 
     public boolean changeEmail(User loggedUser, String newEmail) {
+        String oldEmail = loggedUser.getEmail();
         String query = "SELECT * FROM USER WHERE EMAIL = ?";
         String updateEmailSql = "UPDATE USER SET EMAIL = ? WHERE EMAIL = ?";
-        return updateField(loggedUser.getEmail(), newEmail, query, updateEmailSql);
+        return updateField(oldEmail, newEmail, query, updateEmailSql) && updateParticipations(oldEmail, newEmail);
+    }
+
+    public boolean updateParticipations(String oldEmail, String newEmail) {
+        String query = "UPDATE EVENT_PARTICIPANT SET USER_EMAIL = ? WHERE USER_EMAIL = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, newEmail);
+            preparedStatement.setString(2, oldEmail);
+            preparedStatement.executeUpdate();
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     public boolean changeName(User loggedUser, String newName) {
@@ -289,8 +303,8 @@ public class Data {
                 queryBuilder.append("INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL ");
                 queryBuilder.append("WHERE 1=1 ");
 
-                if (eventName != null && !eventName.isEmpty()) queryBuilder.append("AND E.NAME = ? ");
-                if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE LIKE ? ");
+                if (eventName != null && !eventName.isEmpty()) queryBuilder.append("AND E.NAME LIKE ? ");
+                if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE = ? ");
                 if (startDate != null && !startDate.isEmpty()) queryBuilder.append("AND E.DATE >= ? ");
                 if (endDate != null && !endDate.isEmpty()) queryBuilder.append("AND E.DATE <= ? ");
 
@@ -325,7 +339,7 @@ public class Data {
                 StringBuilder queryBuilder = new StringBuilder();
                 queryBuilder.append("SELECT * FROM EVENT");
 
-                if (eventName != null && !eventName.isEmpty()) queryBuilder.append(" WHERE NAME = ?");
+                if (eventName != null && !eventName.isEmpty()) queryBuilder.append(" WHERE NAME LIKE ?");
                 if (day != null && !day.isEmpty()) queryBuilder.append(" WHERE DATE = ?");
                 if (startDate != null && !startDate.isEmpty()) queryBuilder.append(" WHERE DATE >= ?");
                 if (endDate != null && !endDate.isEmpty()) queryBuilder.append(" AND DATE <= ?");
@@ -333,7 +347,7 @@ public class Data {
                 try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
                     int parameterIndex = 1;
 
-                    if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, eventName);
+                    if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, "%" + eventName + "%");
                     if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
                     if (startDate != null && !startDate.isEmpty())preparedStatement.setString(parameterIndex++, startDate);
                     if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
@@ -369,7 +383,6 @@ public class Data {
 
         if(loggedUser.isAdmin()) file = parentPATH + "/src/pt/isec/brago/eventsManager/datafiles/" + loggedUser.getName() + "_events" + ".csv";
         else file = parentPATH + "/src/pt/isec/brago/eventsManager/datafiles/output_" + loggedUser.getName() + ".csv";
-        System.out.println(file);
 
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.println("ID,NAME,LOCAL,DATE,BEGINHOUR,ENDHOUR");

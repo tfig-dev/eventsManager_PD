@@ -372,7 +372,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 events = server.data.getAttendanceRecords(parameter, null, null, null, false);
-                                if (events != null && !events.isEmpty()) pout.println(events);
+                                if (events != null && !events.isEmpty()) {
+                                    for (Event e : events) { pout.println(e.toString()); }
+                                }
                                 else pout.println("There are no events with this filter");
                             } finally {databaseLock.unlock();}
                             break;
@@ -382,7 +384,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 events = server.data.getAttendanceRecords(null, parameter,null, null, false);
-                                if(events != null && !events.isEmpty()) pout.println(events);
+                                if (events != null && !events.isEmpty()) {
+                                    for (Event e : events) { pout.println(e.toString()); }
+                                }
                                 else pout.println("There are no events with this filter");
                             } finally {databaseLock.unlock();}
                             break;
@@ -394,7 +398,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 events = server.data.getAttendanceRecords(null, null, parameter, secondParameter, false);
-                                if(events != null && !events.isEmpty()) pout.println(events);
+                                if (events != null && !events.isEmpty()) {
+                                    for (Event e : events) { pout.println(e.toString()); }
+                                }
                             else pout.println("There are no events with this filter");
                             } finally {databaseLock.unlock();}
                             break;
@@ -579,7 +585,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 events = server.data.getAttendanceRecords(parameter, null, null, null, true);
-                                if (events != null && !events.isEmpty()) pout.println(events);
+                                if (events != null && !events.isEmpty()) {
+                                    for (Event e : events) { pout.println(e.toString()); }
+                                }
                                 else pout.println("There are no events with this filter");
                             } finally {databaseLock.unlock();}
                             break;
@@ -589,7 +597,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 events = server.data.getAttendanceRecords(null, parameter, null, null, true);
-                                if (events != null && !events.isEmpty()) pout.println(events);
+                                if (events != null && !events.isEmpty()) {
+                                    for (Event e : events) { pout.println(e.toString()); }
+                                }
                                 else pout.println("There are no events with this filter");
                             } finally {databaseLock.unlock();}
                             break;
@@ -601,7 +611,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 events = server.data.getAttendanceRecords(null, null, parameter, secondParameter, true);
-                                if (events != null && !events.isEmpty()) pout.println(events);
+                                if (events != null && !events.isEmpty()) {
+                                    for (Event e : events) { pout.println(e.toString()); }
+                                }
                                 else pout.println("There are no events with this filter");
                             } finally {databaseLock.unlock();}
                             break;
@@ -635,7 +647,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     try {
                         databaseLock.lock();
                         users = server.data.getRecords(eventID);
-                        if (users != null && !users.isEmpty()) pout.println(users);
+                        if (users != null && !users.isEmpty()) {
+                            for (User u : users) { pout.println(u.toString()); }
+                        }
                         else pout.println("There are no participants in this event");
                     } finally {databaseLock.unlock();}
                     break;
@@ -651,7 +665,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         try {
                             databaseLock.lock();
                             events = server.data.getAttendanceEmailRecords(parameter);
-                            if (events != null && !events.isEmpty()) pout.println(events);
+                            if (events != null && !events.isEmpty()) {
+                                for (Event e : events) { pout.println(e.toString()); }
+                            }
                             else pout.println("This user has no participated in any event");
                         } finally {databaseLock.unlock();}
                         break;

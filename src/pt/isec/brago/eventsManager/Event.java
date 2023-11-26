@@ -45,7 +45,7 @@ public class Event implements Serializable {
                 ", \"location\": \"" + location + "\"" +
                 ", \"date\": \"" + date + "\"" +
                 ", \"startTime\": \"" + startTime + "\"" +
-                ", \"endTime\": \"" + endTime + "\"}\n";
+                ", \"endTime\": \"" + endTime + "\"}";
     }
 
     public int getId() {

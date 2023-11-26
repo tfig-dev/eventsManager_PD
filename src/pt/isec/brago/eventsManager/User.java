@@ -46,11 +46,10 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "pt.isec.brago.eventsManager.User{" +
-                "Email=" + email +
-                ", name='" + name + '\'' +
-                ", nif='" + nif + '\'' +
-                "}\n";
+        return "{" +
+                "\"Email\": " + email +
+                ", \"name\": \"" + name + "\"" +
+                ", \"nif\": \"" + nif + "\"}";
     }
 
     public boolean isAdmin() {
