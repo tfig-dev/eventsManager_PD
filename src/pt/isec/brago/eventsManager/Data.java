@@ -1,8 +1,6 @@
 package pt.isec.brago.eventsManager;
 
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.security.SecureRandom;
+import java.io.*;
 import java.sql.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -364,11 +362,14 @@ public class Data {
 
     public boolean saveAttendanceRecords(List<Event> events, User loggedUser) {
         String file;
-
         if(events.isEmpty()) return false;
 
-        if(loggedUser.isAdmin()) file = "src/pt/isec/brago/eventsManager/datafiles/" + loggedUser.getName() + "_events" + ".csv";
-        else file = "src/pt/isec/brago/eventsManager/datafiles/output_" + loggedUser.getName() + ".csv";
+        String executedPATH = System.getProperty("user.dir");
+        File parentPATH = new File(executedPATH).getParentFile();
+
+        if(loggedUser.isAdmin()) file = parentPATH + "/src/pt/isec/brago/eventsManager/datafiles/" + loggedUser.getName() + "_events" + ".csv";
+        else file = parentPATH + "/src/pt/isec/brago/eventsManager/datafiles/output_" + loggedUser.getName() + ".csv";
+        System.out.println(file);
 
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.println("ID,NAME,LOCAL,DATE,BEGINHOUR,ENDHOUR");
@@ -481,7 +482,10 @@ public class Data {
     public boolean saveRecords(List<User> users, User loggedUser) {
         if (users == null || users.isEmpty()) return false;
 
-        String file = "src/pt/isec/brago/eventsManager/datafiles/" + loggedUser.getName() + "_records" + ".csv";
+        String executedPATH = System.getProperty("user.dir");
+        File parentPATH = new File(executedPATH).getParentFile();
+
+        String file = parentPATH + "/src/pt/isec/brago/eventsManager/datafiles/" + loggedUser.getName() + "_records" + ".csv";
         try (PrintWriter printWriter = new PrintWriter(file)) {
             printWriter.println("EMAIL,NAME");
             for (User user : users) printWriter.println(userToCSV(user));

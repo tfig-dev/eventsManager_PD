@@ -661,6 +661,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 case "9":
                     if(server.data.saveAttendanceRecords(events, loggedUser)) pout.println("CSV file generated successfully");
                     else pout.println("You must first get an output from option 8");
+                    events = null;
                     break;
                 case "10":
                     pout.println("Enter event ID: ");
