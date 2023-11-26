@@ -20,6 +20,10 @@ public class Heartbeat implements Serializable {
         this.dbVersion = version;
     }
 
+    public int getVersion() {
+        return dbVersion;
+    }
+
     @Override
     public String toString() {
         return "Heartbeat{" +

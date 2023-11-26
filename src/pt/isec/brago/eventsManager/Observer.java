@@ -23,7 +23,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         group = InetAddress.getByName("230.44.44.44");
         port = 4444;
         socket = new MulticastSocket(port);
-        socket.setSoTimeout(5000);
+        socket.setSoTimeout(30000);
         socket.joinGroup(group);
     }
 
@@ -281,6 +281,11 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
                 try {
                     observer.socket.receive(packet);
                     Heartbeat receivedHeartbeat = deserializeHeartbeat(packet.getData());
+                    if(receivedHeartbeat != null && receivedHeartbeat.getVersion() != observer.data.getVersion()) {
+                        System.out.println("Received heartbeat version does not match the local version. Terminating...");
+                        observer.endObserver();
+                        break;
+                    }
                     System.out.println("Received heartbeat: " + receivedHeartbeat);
                 } catch (SocketTimeoutException e) {
                     System.out.println("No heartbeat received. Terminating...");
