@@ -104,6 +104,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     Thread.sleep(10000);
                     server.databaseLock.lock();
                     server.HeartBeat.changeVersion(server.data.getVersion());
+                    server.databaseLock.unlock();
                     ByteArrayOutputStream bos = new ByteArrayOutputStream();
                     ObjectOutputStream oos = new ObjectOutputStream(bos);
                     oos.writeObject(server.HeartBeat);
@@ -111,7 +112,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     byte[] data = bos.toByteArray();
                     DatagramPacket packet = new DatagramPacket(data, data.length, server.group, server.port);
                     server.socket.send(packet);
-                    server.databaseLock.unlock();
                     System.out.println("Sent heartbeat");
                 } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
@@ -171,6 +171,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         private void notLoggedInMenu(PrintStream pout) {
+            pout.println("---------------------");
             pout.println("1 - Login");
             pout.println("2 - Register");
             pout.println("3 - Exit");
@@ -178,6 +179,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         private void userMenu(PrintStream pout) {
+            pout.println("------------------------------------------");
             pout.println("1 - Edit Account Details");
             pout.println("2 - Input Event Code");
             pout.println("3 - See past participations");
@@ -187,6 +189,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         private void adminMenu(PrintStream pout) {
+            pout.println("------------------------------------------");
             pout.println("1 - Create Event");
             pout.println("2 - Edit Event");
             pout.println("3 - Delete Event");
@@ -743,15 +746,14 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         try {
             databaseLock.lock();
             HeartBeat.changeVersion(data.getVersion());
+            databaseLock.unlock();
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(bos);
             oos.writeObject(HeartBeat);
             oos.flush();
             byte[] data = bos.toByteArray();
-
             DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
             socket.send(packet);
-            databaseLock.unlock();
             System.out.println("Sent heartbeat");
         } catch (IOException e) {
             e.printStackTrace();

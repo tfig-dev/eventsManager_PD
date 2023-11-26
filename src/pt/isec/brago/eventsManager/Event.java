@@ -12,8 +12,6 @@ public class Event implements Serializable {
     private final String date;
     private final String startTime;
     private final String endTime;
-    private final String code;
-    private final String endHour;
 
     public Event(int ID, String name, String location, String date, String startTime, String endTime) {
         this.ID = ID;
@@ -22,8 +20,6 @@ public class Event implements Serializable {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.code = null;
-        this.endHour = null;
     }
 
     public Event(String name, String location, String date, String startTime, String endTime) {
@@ -33,8 +29,6 @@ public class Event implements Serializable {
         this.date = date;
         this.startTime = startTime;
         this.endTime = endTime;
-        this.code = null;
-        this.endHour = null;
     }
 
     @Override

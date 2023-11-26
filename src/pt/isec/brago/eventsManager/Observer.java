@@ -3,6 +3,7 @@ package pt.isec.brago.eventsManager;
 import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
@@ -15,13 +16,12 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     private Data data;
     private ServerInterface mainServer;
     private final InetAddress group;
-    private final int port;
     private final MulticastSocket socket;
 
     public Observer() throws IOException {
         //MULTICAST
         group = InetAddress.getByName("230.44.44.44");
-        port = 4444;
+        int port = 4444;
         socket = new MulticastSocket(port);
         socket.setSoTimeout(30000);
         socket.joinGroup(group);
@@ -216,20 +216,23 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {
-        if(args.length != 2) {
+        if(args.length != 5) {
             System.out.println("Deve passar 1 argumento na linha de comandos: ");
             System.out.println("1 - diretoria onde a base de dados sera guardada (tem que estar vazia)");
             System.out.println("2 - nome da base de dados");
+            System.out.println("3 - IP");
+            System.out.println("4 - RMI service name");
+            System.out.println("5 - RMI port");
             System.exit(1);
         }
 
         String databaseDirectory = args[0];
         String databaseName = args[1];
 
-        // Create the new folder
         try {
-            Files.createDirectories(Paths.get(databaseDirectory));
-            System.out.println("Folder created successfully: " + Paths.get(databaseDirectory));
+            Path dir = Paths.get(databaseDirectory);
+            Files.createDirectories(dir);
+            System.out.println("Folder created successfully: " + dir);
         } catch (Exception e) {
             System.err.println("Error creating folder: " + e.getMessage());
         }
@@ -237,7 +240,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         /* UNCOMMENT THIS AFTER
         String[] files = directory.list();
         if (files != null && files.length > 0) {
-            System.out.println(databaseDirectory + " is not empty.");
+            System.out.println(databaseDirectory + "is not empty.");
             return;
         }
 
@@ -245,7 +248,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
 
         Observer observer = new Observer();
 
-        String objectUrl = "rmi://localhost/eventsManager_PD";
+        String objectUrl = "rmi://" + args[2] + ":" + args[4] + "/" + args[3];
         observer.mainServer = (ServerInterface) Naming.lookup(objectUrl);
         String pathName = databaseDirectory + "/" + databaseName;
         byte[] databaseContent = observer.mainServer.getCompleteDatabase();
@@ -269,7 +272,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     static class heartbeatHandler implements Runnable {
         private final Observer observer;
 
-        public heartbeatHandler(Observer observer) throws IOException {
+        public heartbeatHandler(Observer observer) {
             this.observer = observer;
         }
 
