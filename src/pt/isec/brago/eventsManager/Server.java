@@ -54,6 +54,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         try (ServerSocket serverSocket = new ServerSocket(listeningPort)) {
             System.out.println("Servidor iniciado e á espera de conexões...");
 
+            Thread heartbeat = new Thread(new heartBeat());
+            heartbeat.start();
+
             while (true) {
                 try {
                     Socket clientSocket = serverSocket.accept();
@@ -70,6 +73,34 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             System.out.println("Ocorreu um erro no servidor: " + e);
         } finally {
             server.data.closeConnection();
+        }
+    }
+
+    static class heartBeat implements Runnable {
+        InetAddress group;
+        int port;
+        MulticastSocket socket;
+
+        public heartBeat() throws IOException {
+            group = InetAddress.getByName("230.44.44.44");
+            port = 4444;
+            socket = new MulticastSocket(port);
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                String heartbeatMessage = "Heartbeat from server";
+                byte[] data = heartbeatMessage.getBytes();
+
+                DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
+                try {
+                    socket.send(packet);
+                    Thread.sleep(10000);
+                } catch (IOException | InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
         }
     }
 
