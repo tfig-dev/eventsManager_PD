@@ -39,14 +39,13 @@ public class Event implements Serializable {
 
     @Override
     public String toString() {
-        return "pt.isec.brago.eventsManager.Event{" +
-                "ID=" + ID +
-                ", name='" + name + '\'' +
-                ", location='" + location + '\'' +
-                ", date='" + date + '\'' +
-                ", startTime='" + startTime + '\'' +
-                ", endTime='" + endTime + '\'' +
-                "}\n";
+        return "{" +
+                "\"ID\": " + ID +
+                ", \"name\": \"" + name + "\"" +
+                ", \"location\": \"" + location + "\"" +
+                ", \"date\": \"" + date + "\"" +
+                ", \"startTime\": \"" + startTime + "\"" +
+                ", \"endTime\": \"" + endTime + "\"}\n";
     }
 
     public int getId() {
