@@ -1,21 +1,31 @@
 package pt.isec.brago.eventsManager;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
-import java.io.FileOutputStream;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class Observer extends UnicastRemoteObject implements ObserverInterface {
     private Data data;
     private ServerInterface mainServer;
+    private final InetAddress group;
+    private final int port;
+    private final MulticastSocket socket;
 
-    public Observer() throws java.rmi.RemoteException {}
+    public Observer() throws IOException {
+        //MULTICAST
+        group = InetAddress.getByName("230.44.44.44");
+        port = 4444;
+        socket = new MulticastSocket(port);
+        socket.setSoTimeout(5000);
+        socket.joinGroup(group);
+    }
 
     @Override
     public void saveDatabaseLocally(byte[] content, String filepath) {
@@ -194,7 +204,12 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     @Override
     public void endObserver() throws RemoteException {
         try {
+            socket.leaveGroup(group);
+            socket.close();
+            mainServer.removeObserver(this);
             UnicastRemoteObject.unexportObject(this, true);
+            System.out.println("Press enter to continue...");
+            System.in.read();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -241,6 +256,53 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         System.out.println("Observer criado e em execucao");
 
         observer.mainServer.addObserver(observer);
+
+        heartbeatHandler heartbeatReceiver = new heartbeatHandler(observer);
+        Thread receiverThread = new Thread(heartbeatReceiver);
+        receiverThread.start();
+
         System.out.println("Observer registado no servidor");
+
+
+    }
+
+    static class heartbeatHandler implements Runnable {
+        private final Observer observer;
+
+        public heartbeatHandler(Observer observer) throws IOException {
+            this.observer = observer;
+        }
+
+        @Override
+        public void run() {
+            while (true) {
+                byte[] buffer = new byte[200];
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                try {
+                    observer.socket.receive(packet);
+                    Heartbeat receivedHeartbeat = deserializeHeartbeat(packet.getData());
+                    System.out.println("Received heartbeat: " + receivedHeartbeat);
+                } catch (SocketTimeoutException e) {
+                    System.out.println("No heartbeat received. Terminating...");
+                    try {
+                        observer.endObserver();
+                        break;
+                    } catch (RemoteException re) {
+                        throw new RuntimeException(re);
+                    }
+                } catch (IOException | RuntimeException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        private Heartbeat deserializeHeartbeat(byte[] data) {
+            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data))) {
+                return (Heartbeat) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
     }
 }

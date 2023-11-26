@@ -19,4 +19,13 @@ public class Heartbeat implements Serializable {
     public void changeVersion(int version) {
         this.dbVersion = version;
     }
+
+    @Override
+    public String toString() {
+        return "Heartbeat{" +
+                "port=" + port +
+                ", registryName='" + registryName + '\'' +
+                ", dbVersion=" + dbVersion +
+                '}';
+    }
 }
