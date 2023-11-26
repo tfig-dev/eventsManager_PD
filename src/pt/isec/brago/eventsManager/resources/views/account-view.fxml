@@ -31,7 +31,7 @@
                            </HBox.margin>
                         </ImageView>
                         <Line endY="50.0" startY="-50.0" strokeWidth="0.2" />
-                        <Text fill="#2f2f2f" strokeType="OUTSIDE" strokeWidth="0.0" text="Hi, Tiago">
+                        <Text id="textLabel_title" fill="#2f2f2f" strokeType="OUTSIDE" strokeWidth="0.0" text="Hi, Tiago">
                            <HBox.margin>
                               <Insets left="40.0" />
                            </HBox.margin>
@@ -151,7 +151,7 @@
                                           <VBox alignment="CENTER_LEFT" maxWidth="300.0" minWidth="300.0" prefWidth="300.0" spacing="5.0">
                                              <children>
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="NAME" />
-                                                <TextField />
+                                                <TextField id="textField_name" />
                                              </children>
                                              <padding>
                                                 <Insets right="20.0" />
@@ -160,7 +160,7 @@
                                           <VBox alignment="CENTER_LEFT" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" spacing="5.0">
                                              <children>
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="ID" />
-                                                <TextField />
+                                                <TextField id="textField_ID" />
                                              </children>
                                              <padding>
                                                 <Insets right="20.0" />
@@ -179,7 +179,7 @@
                                           <VBox alignment="CENTER_LEFT" maxWidth="300.0" minWidth="300.0" prefWidth="300.0" spacing="5.0">
                                              <children>
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="E-MAIL" />
-                                                <TextField />
+                                                <TextField id="textField_email" />
                                              </children>
                                              <padding>
                                                 <Insets right="20.0" />
@@ -188,7 +188,7 @@
                                           <VBox alignment="CENTER_LEFT" maxWidth="200.0" minWidth="200.0" prefWidth="200.0" spacing="5.0">
                                              <children>
                                                 <Text strokeType="OUTSIDE" strokeWidth="0.0" text="PASSWORD" />
-                                                <PasswordField />
+                                                <PasswordField id="textField_pw" />
                                              </children>
                                              <padding>
                                                 <Insets right="20.0" />
@@ -201,7 +201,7 @@
                                     </HBox>
                                     <HBox alignment="CENTER_LEFT" prefHeight="140.0" prefWidth="520.0">
                                        <children>
-                                          <Button alignment="CENTER" mnemonicParsing="false" style="-fx-background-color: #47ab71;" text="SAVE" textFill="WHITE">
+                                          <Button id="btn_SAVE" alignment="CENTER" mnemonicParsing="false" style="-fx-background-color: #47ab71;" text="SAVE" textFill="WHITE">
                                              <font>
                                                 <Font size="26.0" />
                                              </font>
@@ -214,7 +214,7 @@
                                                 <Insets />
                                              </HBox.margin>
                                           </Region>
-                                          <Button mnemonicParsing="false" style="-fx-background-color: #d04141;" text="EXIT" textFill="WHITE">
+                                          <Button id="btn_EXIT" mnemonicParsing="false" style="-fx-background-color: #d04141;" text="EXIT" textFill="WHITE">
                                              <font>
                                                 <Font size="26.0" />
                                              </font>
