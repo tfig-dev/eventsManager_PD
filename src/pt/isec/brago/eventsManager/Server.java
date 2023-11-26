@@ -19,6 +19,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     private final InetAddress group;
     private final int port;
     private final MulticastSocket socket;
+    private Heartbeat HeartBeat;
 
     public Server(String pathBD) throws IOException {
         backupServers = new ArrayList<>();
@@ -48,6 +49,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             rmiServerName = args[2];
             rmiServerPort = Integer.parseInt(args[3]);
 
+
             LocateRegistry.createRegistry(rmiServerPort);
             server = new Server(pathBD);
             Naming.bind("rmi://localhost/" + rmiServerName, server);
@@ -62,7 +64,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         try (ServerSocket serverSocket = new ServerSocket(listeningPort)) {
             System.out.println("Servidor iniciado e á espera de conexões...");
 
-            Thread heartbeat = new Thread(new heartBeat(server.group, server.port, server.socket));
+            server.HeartBeat = new Heartbeat(rmiServerPort, server.data.getVersion(), rmiServerName);
+            Thread heartbeat = new Thread(new heartBeat(server));
             heartbeat.start();
 
             while (true) {
@@ -88,25 +91,26 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     static class heartBeat implements Runnable {
-        private final InetAddress group;
-        private final int port;
-        private final MulticastSocket socket;
-        public heartBeat(InetAddress group, int port, MulticastSocket socket) throws IOException {
-            this.group = group;
-            this.port = port;
-            this.socket = socket;
+        private final Server server;
+        public heartBeat(Server server) {
+            this.server = server;
         }
 
         @Override
         public void run() {
             while (true) {
-                String heartbeatMessage = "Heartbeat from server";
-                byte[] data = heartbeatMessage.getBytes();
-
-                DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
                 try {
                     Thread.sleep(10000);
-                    socket.send(packet);
+                    server.databaseLock.lock();
+                    server.HeartBeat.changeVersion(server.data.getVersion());
+                    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                    ObjectOutputStream oos = new ObjectOutputStream(bos);
+                    oos.writeObject(server.HeartBeat);
+                    oos.flush();
+                    byte[] data = bos.toByteArray();
+                    DatagramPacket packet = new DatagramPacket(data, data.length, server.group, server.port);
+                    server.socket.send(packet);
+                    server.databaseLock.unlock();
                     System.out.println("Sent heartbeat");
                 } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
@@ -702,10 +706,17 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     protected void sendHeartBeat() {
         try {
-            String heartbeatMessage = "Heartbeat from server";
-            byte[] data = heartbeatMessage.getBytes();
+            databaseLock.lock();
+            HeartBeat.changeVersion(data.getVersion());
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(HeartBeat);
+            oos.flush();
+            byte[] data = bos.toByteArray();
+
             DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
             socket.send(packet);
+            databaseLock.unlock();
             System.out.println("Sent heartbeat");
         } catch (IOException e) {
             e.printStackTrace();
