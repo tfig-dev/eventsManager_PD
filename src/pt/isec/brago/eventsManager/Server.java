@@ -16,11 +16,19 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     private final Data data;
     private final List<ObserverInterface> backupServers;
     private final ReentrantLock databaseLock;
+    private final InetAddress group;
+    private final int port;
+    private final MulticastSocket socket;
 
-    public Server(String pathBD) throws RemoteException {
+    public Server(String pathBD) throws IOException {
         backupServers = new ArrayList<>();
         data = new Data(pathBD);
         databaseLock = new ReentrantLock();
+
+        //MULTICAST
+        group = InetAddress.getByName("230.44.44.44");
+        port = 4444;
+        socket = new MulticastSocket(port);
     }
 
     public static void main(String[] args) {
@@ -47,14 +55,14 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         } catch (NumberFormatException e) {
             System.out.println("O porto de escuta deve ser um inteiro positivo.");
             return;
-        } catch (RemoteException | AlreadyBoundException | MalformedURLException e) {
+        } catch (AlreadyBoundException | IOException e) {
             throw new RuntimeException(e);
         }
 
         try (ServerSocket serverSocket = new ServerSocket(listeningPort)) {
             System.out.println("Servidor iniciado e á espera de conexões...");
 
-            Thread heartbeat = new Thread(new heartBeat());
+            Thread heartbeat = new Thread(new heartBeat(server.group, server.port, server.socket));
             heartbeat.start();
 
             while (true) {
@@ -72,19 +80,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         } catch (IOException e) {
             System.out.println("Ocorreu um erro no servidor: " + e);
         } finally {
+            if (server.socket != null && !server.socket.isClosed()) {
+                server.socket.close();
+            }
             server.data.closeConnection();
         }
     }
 
     static class heartBeat implements Runnable {
-        InetAddress group;
-        int port;
-        MulticastSocket socket;
-
-        public heartBeat() throws IOException {
-            group = InetAddress.getByName("230.44.44.44");
-            port = 4444;
-            socket = new MulticastSocket(port);
+        private final InetAddress group;
+        private final int port;
+        private final MulticastSocket socket;
+        public heartBeat(InetAddress group, int port, MulticastSocket socket) throws IOException {
+            this.group = group;
+            this.port = port;
+            this.socket = socket;
         }
 
         @Override
@@ -95,8 +105,9 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
                 DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
                 try {
-                    socket.send(packet);
                     Thread.sleep(10000);
+                    socket.send(packet);
+                    System.out.println("Sent heartbeat");
                 } catch (IOException | InterruptedException e) {
                     throw new RuntimeException(e);
                 }
@@ -225,6 +236,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Registration successful");
                             server.notifyNewUser(newUser);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         else pout.println("Registration failed");
 
@@ -263,6 +275,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Email changed successfully");
                                     server.notifyEmailChange(loggedUser, newEmail);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("Email already in use");
                             } finally {databaseLock.unlock();}
@@ -276,6 +289,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Name changed successfully");
                                     server.notifyNameChange(loggedUser, newName);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error changing your name");
                             } finally {databaseLock.unlock();}
@@ -289,6 +303,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Password changed successfully");
                                     server.notifyPasswordChange(loggedUser, newPassword);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error changing your password");
                             } finally {databaseLock.unlock();}
@@ -302,6 +317,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("NIF changed successfully");
                                     server.notifyNIFChange(loggedUser, newNIF);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error changing your NIF");
                             } finally {databaseLock.unlock();}
@@ -327,6 +343,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Presence registered successfully");
                             server.notifyNewAttendance(loggedUser, eventCode);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         case "error" -> pout.println("Invalid Code");
                         default -> pout.println("Something went wrong");
@@ -421,6 +438,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Event created successfully");
                             server.notifyNewEvent(newEvent);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         else pout.println("There was an error creating the event");
                     } finally {databaseLock.unlock();}
@@ -452,6 +470,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Event edited successfully");
                                     server.notifyEventNameChange(eventID, parameter);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
@@ -465,6 +484,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Event edited successfully");
                                     server.notifyEventLocalChange(eventID, parameter);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
@@ -478,6 +498,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Event edited successfully");
                                     server.notifyEventDateChange(eventID, parameter);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
@@ -491,6 +512,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Event edited successfully");
                                     server.notifyEventStartTimeChange(eventID, parameter);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
@@ -504,6 +526,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                                     pout.println("Event edited successfully");
                                     server.notifyEventEndTimeChange(eventID, parameter);
                                     server.data.updateVersion();
+                                    server.sendHeartBeat();
                                 }
                                 else pout.println("There was an error editing the event");
                             } finally {databaseLock.unlock();}
@@ -529,6 +552,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Event deleted successfully");
                             server.notifyEventDeletion(eventID);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         else pout.println("There was an error deleting the event");
                     } finally {databaseLock.unlock();}
@@ -594,6 +618,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Code generated successfully");
                             server.notifyCodeGeneration(eventID, codeDuration);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         else pout.println("Event does not exist");
                     } finally {databaseLock.unlock();}
@@ -642,6 +667,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Participant deleted successfully");
                             server.notifyParticipantDeletion(eventID, parameter);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         else
                             pout.println("There was an error deleting the participant / Participant or event does not exist");
@@ -658,6 +684,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             pout.println("Participant added successfully");
                             server.notifyParticipantAddition(eventID, parameter);
                             server.data.updateVersion();
+                            server.sendHeartBeat();
                         }
                         else
                             pout.println("There was an error adding the participant / Participant or event does not exist");
@@ -670,6 +697,18 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     pout.println("Invalid option");
                     break;
             }
+        }
+    }
+
+    protected void sendHeartBeat() {
+        try {
+            String heartbeatMessage = "Heartbeat from server";
+            byte[] data = heartbeatMessage.getBytes();
+            DatagramPacket packet = new DatagramPacket(data, data.length, group, port);
+            socket.send(packet);
+            System.out.println("Sent heartbeat");
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
