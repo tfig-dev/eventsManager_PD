@@ -8,6 +8,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -131,7 +132,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
         private void userMenu(PrintStream pout) {
             pout.println("1 - Edit Account Details");
-            pout.println("2 - Input pt.isec.brago.eventsManager.Event Code");
+            pout.println("2 - Input Event Code");
             pout.println("3 - See past participations");
             pout.println("4 - Get past participations CSV file");
             pout.println("5 - Logout");
@@ -139,11 +140,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         private void adminMenu(PrintStream pout) {
-            pout.println("1 - Create pt.isec.brago.eventsManager.Event");
-            pout.println("2 - Edit pt.isec.brago.eventsManager.Event");
-            pout.println("3 - Delete pt.isec.brago.eventsManager.Event");
+            pout.println("1 - Create Event");
+            pout.println("2 - Edit Event");
+            pout.println("3 - Delete Event");
             pout.println("4 - Check Events");
-            pout.println("5 - Generate pt.isec.brago.eventsManager.Event Code");
+            pout.println("5 - Generate Event Code");
             pout.println("6 - Check Participants");
             pout.println("7 - Get CSV File");
             pout.println("8 - Check events by user participation");
@@ -372,7 +373,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
             switch(userInput) {
                 case "1":
-                    pout.println("pt.isec.brago.eventsManager.Event Name: ");
+                    pout.println("Event Name: ");
                     String eventName = bin.readLine();
                     pout.println("Local: ");
                     String local = bin.readLine();
@@ -386,7 +387,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         databaseLock.lock();
                         Event newEvent = new Event(eventName, local, date, startTime, endTime);
                         if(server.data.createEvent(newEvent)) {
-                            pout.println("pt.isec.brago.eventsManager.Event created successfully");
+                            pout.println("Event created successfully");
                             server.notifyNewEvent(newEvent);
                             server.data.updateVersion();
                         }
@@ -417,7 +418,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, parameter, null, null, null, null)) {
-                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
+                                    pout.println("Event edited successfully");
                                     server.notifyEventNameChange(eventID, parameter);
                                     server.data.updateVersion();
                                 }
@@ -430,7 +431,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, parameter, null, null, null)) {
-                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
+                                    pout.println("Event edited successfully");
                                     server.notifyEventLocalChange(eventID, parameter);
                                     server.data.updateVersion();
                                 }
@@ -443,7 +444,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, null, parameter, null, null)) {
-                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
+                                    pout.println("Event edited successfully");
                                     server.notifyEventDateChange(eventID, parameter);
                                     server.data.updateVersion();
                                 }
@@ -456,7 +457,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, null, null, parameter, null)) {
-                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
+                                    pout.println("Event edited successfully");
                                     server.notifyEventStartTimeChange(eventID, parameter);
                                     server.data.updateVersion();
                                 }
@@ -469,7 +470,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             try {
                                 databaseLock.lock();
                                 if (server.data.editEvent(eventID, null, null, null, null, parameter)) {
-                                    pout.println("pt.isec.brago.eventsManager.Event edited successfully");
+                                    pout.println("Event edited successfully");
                                     server.notifyEventEndTimeChange(eventID, parameter);
                                     server.data.updateVersion();
                                 }
@@ -494,7 +495,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             break;
                         }
                         if (server.data.deleteEvent(eventID)) {
-                            pout.println("pt.isec.brago.eventsManager.Event deleted successfully");
+                            pout.println("Event deleted successfully");
                             server.notifyEventDeletion(eventID);
                             server.data.updateVersion();
                         }
@@ -563,7 +564,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             server.notifyCodeGeneration(eventID, codeDuration);
                             server.data.updateVersion();
                         }
-                        else pout.println("pt.isec.brago.eventsManager.Event does not exist");
+                        else pout.println("Event does not exist");
                     } finally {databaseLock.unlock();}
                     break;
                 case "6":
@@ -652,8 +653,15 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void removeObserver(ObserverInterface backupServer) throws RemoteException {
         synchronized (backupServers) {
-            backupServers.remove(backupServer);
-            System.out.println("Removed backupServer");
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface currentObserver = iterator.next();
+                if (currentObserver.equals(backupServer)) {
+                    iterator.remove();
+                    System.out.println("Removed backupServer");
+                    break;
+                }
+            }
         }
     }
 
@@ -680,14 +688,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyNewUser(User newUser) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateNewUser(newUser);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateNewUser(newUser);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -696,14 +711,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEmailChange(User loggedUser, String newEmail) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEmailChange(loggedUser, newEmail);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEmailChange(loggedUser, newEmail);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -712,14 +734,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyNameChange(User loggedUser, String newName) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateNameChange(loggedUser, newName);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateNameChange(loggedUser, newName);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -728,30 +757,45 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyPasswordChange(User loggedUser, String newPassword) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updatePasswordChange(loggedUser, newPassword);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updatePasswordChange(loggedUser, newPassword);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
+
     }
 
     @Override
     public void notifyNIFChange(User loggedUser, int newNIF) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateNIFChange(loggedUser, newNIF);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateNIFChange(loggedUser, newNIF);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -760,14 +804,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyNewAttendance(User loggedUser, String eventCode) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateNewAttendance(loggedUser, eventCode);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateNewAttendance(loggedUser, eventCode);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -776,14 +827,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyNewEvent(Event newEvent) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateNewEvent(newEvent);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateNewEvent(newEvent);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -792,14 +850,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEventNameChange(int eventID, String newName) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEventNameChange(eventID, newName);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEventNameChange(eventID, newName);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -808,14 +873,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEventLocalChange(int eventID, String newLocal) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEventLocalChange(eventID, newLocal);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEventLocalChange(eventID, newLocal);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -824,14 +896,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEventDateChange(int eventID, String newDate) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEventDateChange(eventID, newDate);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEventDateChange(eventID, newDate);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -840,14 +919,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEventStartTimeChange(int eventID, String newStartTime) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEventStartTimeChange(eventID, newStartTime);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEventStartTimeChange(eventID, newStartTime);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -856,14 +942,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEventEndTimeChange(int eventID, String newEndTime) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEventEndTimeChange(eventID, newEndTime);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEventEndTimeChange(eventID, newEndTime);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -872,14 +965,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyEventDeletion(int eventID) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateEventDeletion(eventID);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateEventDeletion(eventID);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -888,14 +988,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyCodeGeneration(int eventID, int codeDuration) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateCodeGeneration(eventID, codeDuration);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateCodeGeneration(eventID, codeDuration);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -904,14 +1011,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyParticipantDeletion(int eventID, String email) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateParticipantDeletion(eventID, email);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateParticipantDeletion(eventID, email);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }
@@ -920,14 +1034,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     @Override
     public void notifyParticipantAddition(int eventID, String email) throws RemoteException {
         synchronized (backupServers) {
-            for (ObserverInterface backupServer : backupServers) {
+            Iterator<ObserverInterface> iterator = backupServers.iterator();
+            while (iterator.hasNext()) {
+                ObserverInterface backupServer = iterator.next();
                 try {
-                    if(!checkVersion(backupServer)) removeObserver(backupServer);
-                    backupServer.updateParticipantAddition(eventID, email);
+                    if (!checkVersion(backupServer)) {
+                        backupServer.endObserver();
+                        iterator.remove();
+                        System.out.println("Observador com base de dados desatualizada... Desconectado.");
+                    } else {
+                        backupServer.updateParticipantAddition(eventID, email);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    removeObserver(backupServer);
-                    System.out.println("Observador inacessivel / Observador com base de dados desatualizada");
+                    iterator.remove();
+                    System.out.println("Erro relacionado com o observador");
                 }
             }
         }

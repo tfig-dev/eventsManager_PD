@@ -37,31 +37,46 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
 
     @Override
     public void updateNewUser(User newUser) throws RemoteException {
-        if(data.registerUser(newUser)) System.out.println("Database updated successfully");
+        if(data.registerUser(newUser)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEmailChange(User loggedUser, String newEmail) throws RemoteException {
-        if(data.changeEmail(loggedUser, newEmail)) System.out.println("Database updated successfully");
+        if(data.changeEmail(loggedUser, newEmail)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateNameChange(User loggedUser, String newName) throws RemoteException {
-        if(data.changeName(loggedUser, newName)) System.out.println("Database updated successfully");
+        if(data.changeName(loggedUser, newName)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updatePasswordChange(User loggedUser, String newPassword) throws RemoteException {
-        if(data.changePassword(loggedUser, newPassword)) System.out.println("Database updated successfully");
+        if(data.changePassword(loggedUser, newPassword)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateNIFChange(User loggedUser, int newNIF) throws RemoteException {
-        if(data.changeNIF(loggedUser, newNIF)) System.out.println("Database updated successfully");
+        if(data.changeNIF(loggedUser, newNIF)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
@@ -71,6 +86,7 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         switch (status) {
             case "success":
                 System.out.println("Database updated successfully");
+                data.updateVersion();
                 break;
             case "used":
             case "error":
@@ -82,67 +98,106 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
 
     @Override
     public void updateNewEvent(Event newEvent) throws RemoteException {
-        if(data.createEvent(newEvent)) System.out.println("Database updated successfully");
+        if(data.createEvent(newEvent)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEventNameChange(int eventID, String newName) throws RemoteException {
-        if(data.editEvent(eventID, newName, null, null, null, null)) System.out.println("Database updated successfully");
+        if(data.editEvent(eventID, newName, null, null, null, null)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEventLocalChange(int eventID, String newLocal) throws RemoteException {
-        if(data.editEvent(eventID, null, newLocal, null, null, null)) System.out.println("Database updated successfully");
+        if(data.editEvent(eventID, null, newLocal, null, null, null)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEventDateChange(int eventID, String newDate) throws RemoteException {
-        if(data.editEvent(eventID, null, null, newDate, null, null)) System.out.println("Database updated successfully");
+        if(data.editEvent(eventID, null, null, newDate, null, null)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEventStartTimeChange(int eventID, String newStartTime) throws RemoteException {
-        if(data.editEvent(eventID, null, null, null, newStartTime, null)) System.out.println("Database updated successfully");
+        if(data.editEvent(eventID, null, null, null, newStartTime, null)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEventEndTimeChange(int eventID, String newEndTime) throws RemoteException {
-        if(data.editEvent(eventID, null, null, null, null, newEndTime)) System.out.println("Database updated successfully");
+        if(data.editEvent(eventID, null, null, null, null, newEndTime)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateEventDeletion(int eventID) throws RemoteException {
-        if(data.deleteEvent(eventID)) System.out.println("Database updated successfully");
+        if(data.deleteEvent(eventID)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateCodeGeneration(int eventID, int codeDuration) throws RemoteException {
-        if(data.updateCode(eventID, codeDuration)) System.out.println("Database updated successfully");
+        if(data.updateCode(eventID, codeDuration)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateParticipantDeletion(int eventID, String email) throws RemoteException {
-        if(data.deleteParticipant(eventID, email)) System.out.println("Database updated successfully");
+        if(data.deleteParticipant(eventID, email)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public void updateParticipantAddition(int eventID, String email) throws RemoteException {
-        if(data.addParticipant(eventID, email)) System.out.println("Database updated successfully");
+        if(data.addParticipant(eventID, email)) {
+            System.out.println("Database updated successfully");
+            data.updateVersion();
+        }
         else System.out.println("Error updating the database");
     }
 
     @Override
     public int getVersion() throws RemoteException {
         return data.getVersion();
+    }
+
+    @Override
+    public void endObserver() throws RemoteException {
+        try {
+            UnicastRemoteObject.unexportObject(this, true);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) throws IOException, NotBoundException {
@@ -183,9 +238,9 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         observer.saveDatabaseLocally(databaseContent, pathName);
         observer.createData(pathName);
 
-        System.out.println("Servico pt.isec.brago.eventsManager.Observer criado e em execucao");
+        System.out.println("Observer criado e em execucao");
 
         observer.mainServer.addObserver(observer);
-        System.out.println("pt.isec.brago.eventsManager.Observer registado no servidor");
+        System.out.println("Observer registado no servidor");
     }
 }
