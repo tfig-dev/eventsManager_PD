@@ -170,8 +170,8 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
     }
 
     @Override
-    public void updateCodeGeneration(int eventID, int codeDuration) throws RemoteException {
-        if(data.updateCode(eventID, codeDuration)) {
+    public void updateCodeGeneration(int eventID, int codeDuration, String generatedCode) throws RemoteException {
+        if(data.updateCode(eventID, codeDuration, generatedCode)) {
             System.out.println("Database updated successfully");
             data.updateVersion();
         }

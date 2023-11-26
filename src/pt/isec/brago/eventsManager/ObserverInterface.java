@@ -20,7 +20,7 @@ public interface ObserverInterface extends Remote {
     void updateEventStartTimeChange(int eventID, String newStartTime) throws RemoteException;
     void updateEventEndTimeChange(int eventID, String newEndTime) throws RemoteException;
     void updateEventDeletion(int eventID) throws RemoteException;
-    void updateCodeGeneration(int eventID, int codeDuration) throws RemoteException;
+    void updateCodeGeneration(int eventID, int codeDuration, String generatedCode) throws RemoteException;
     void updateParticipantDeletion(int eventID, String email) throws RemoteException;
     void updateParticipantAddition(int eventID, String email) throws RemoteException;
     int getVersion() throws RemoteException;

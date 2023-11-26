@@ -20,7 +20,7 @@ public interface ServerInterface extends Remote {
     void notifyEventStartTimeChange(int eventID, String newStartTime) throws RemoteException;
     void notifyEventEndTimeChange(int eventID, String newEndTime) throws RemoteException;
     void notifyEventDeletion(int eventID) throws RemoteException;
-    void notifyCodeGeneration(int eventID, int codeDuration) throws RemoteException;
+    void notifyCodeGeneration(int eventID, int codeDuration, String generatedCode) throws RemoteException;
     void notifyParticipantDeletion(int eventID, String userEmail) throws RemoteException;
     void notifyParticipantAddition(int eventID, String userEmail) throws RemoteException;
 }

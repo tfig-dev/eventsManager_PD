@@ -7,6 +7,7 @@ import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.server.UnicastRemoteObject;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -618,9 +619,10 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     int codeDuration = Integer.parseInt(bin.readLine());
                     try {
                         databaseLock.lock();
-                        if (server.data.updateCode(eventID, codeDuration)) {
+                        String generatedCode = server.generateCode();
+                        if (server.data.updateCode(eventID, codeDuration, generatedCode)) {
                             pout.println("Code generated successfully");
-                            server.notifyCodeGeneration(eventID, codeDuration);
+                            server.notifyCodeGeneration(eventID, codeDuration, generatedCode);
                             server.data.updateVersion();
                             server.sendHeartBeat();
                         }
@@ -702,6 +704,22 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     break;
             }
         }
+    }
+
+    private String generateCode() {
+        final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        final int CODE_LENGTH = 5;
+
+        SecureRandom random = new SecureRandom();
+        StringBuilder codeBuilder = new StringBuilder();
+
+        for (int i = 0; i < CODE_LENGTH; i++) {
+            int randomIndex = random.nextInt(CHARACTERS.length());
+            char randomChar = CHARACTERS.charAt(randomIndex);
+            codeBuilder.append(randomChar);
+        }
+
+        return codeBuilder.toString();
     }
 
     protected void sendHeartBeat() {
@@ -1067,7 +1085,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     @Override
-    public void notifyCodeGeneration(int eventID, int codeDuration) throws RemoteException {
+    public void notifyCodeGeneration(int eventID, int codeDuration, String generatedCode) throws RemoteException {
         synchronized (backupServers) {
             Iterator<ObserverInterface> iterator = backupServers.iterator();
             while (iterator.hasNext()) {
@@ -1078,7 +1096,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                         iterator.remove();
                         System.out.println("Observador com base de dados desatualizada... Desconectado.");
                     } else {
-                        backupServer.updateCodeGeneration(eventID, codeDuration);
+                        backupServer.updateCodeGeneration(eventID, codeDuration, generatedCode);
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

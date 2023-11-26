@@ -198,23 +198,7 @@ public class Data {
         }
     }
 
-    private String generateCode() {
-        final String CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-        final int CODE_LENGTH = 5;
-
-        SecureRandom random = new SecureRandom();
-        StringBuilder codeBuilder = new StringBuilder();
-
-        for (int i = 0; i < CODE_LENGTH; i++) {
-            int randomIndex = random.nextInt(CHARACTERS.length());
-            char randomChar = CHARACTERS.charAt(randomIndex);
-            codeBuilder.append(randomChar);
-        }
-
-        return codeBuilder.toString();
-    }
-
-    public boolean updateCode(int eventID, int minutes) {
+    public boolean updateCode(int eventID, int minutes, String generatedCode) {
         String selectQuery = "SELECT * FROM EVENT WHERE ID = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectQuery)) {
             selectStatement.setInt(1, eventID);
@@ -222,7 +206,7 @@ public class Data {
                 if (resultSet.next()) {
                     String updateQuery = "UPDATE EVENT SET CODE = ?, CODEEXPIRATIONTIME = ? WHERE ID = ?";
                     try (PreparedStatement updateStatement = connection.prepareStatement(updateQuery)) {
-                        updateStatement.setString(1, generateCode());
+                        updateStatement.setString(1, generatedCode);
 
                         LocalDateTime expirationTime = LocalDateTime.now().plusMinutes(minutes);
                         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss");
@@ -308,14 +292,14 @@ public class Data {
                 queryBuilder.append("WHERE 1=1 ");
 
                 if (eventName != null && !eventName.isEmpty()) queryBuilder.append("AND E.NAME = ? ");
-                if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE = ? ");
+                if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE LIKE ? ");
                 if (startDate != null && !startDate.isEmpty()) queryBuilder.append("AND E.DATE >= ? ");
                 if (endDate != null && !endDate.isEmpty()) queryBuilder.append("AND E.DATE <= ? ");
 
                 try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
                     int parameterIndex = 1;
 
-                    if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, eventName);
+                    if (eventName != null && !eventName.isEmpty()) preparedStatement.setString(parameterIndex++, "%" + eventName + "%");
                     if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
                     if (startDate != null && !startDate.isEmpty()) preparedStatement.setString(parameterIndex++, startDate);
                     if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
