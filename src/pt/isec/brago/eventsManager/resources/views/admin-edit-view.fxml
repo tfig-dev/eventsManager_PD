@@ -27,7 +27,7 @@
                      <children>
                         <ImageView fitHeight="100.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
                            <image>
-                              <Image url="@ipc_logo_preto.png" />
+                              <Image url="@../icons/ipc_logo_preto.png" />
                            </image>
                            <HBox.margin>
                               <Insets left="20.0" right="19.0" />
@@ -59,7 +59,7 @@
                                        <children>
                                           <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@add-post_branco.png" />
+                                                <Image url="@../icons/add-post_branco.png" />
                                              </image>
                                           </ImageView>
                                           <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="CREATE">
@@ -80,7 +80,7 @@
                                        <children>
                                           <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@settings_grey.png" />
+                                                <Image url="@../icons/settings_grey.png" />
                                              </image>
                                           </ImageView>
                                           <Text fill="#2f2f2f" strokeType="OUTSIDE" strokeWidth="0.0" text="EDIT">
@@ -101,7 +101,7 @@
                                        <children>
                                           <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@view_white.png" />
+                                                <Image url="@../icons/view_white.png" />
                                              </image>
                                           </ImageView>
                                           <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="VIEW">
@@ -122,7 +122,7 @@
                                        <children>
                                           <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@event_white.png" />
+                                                <Image url="@../icons/event_white.png" />
                                              </image>
                                           </ImageView>
                                           <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="EVENT">
@@ -143,7 +143,7 @@
                                        <children>
                                           <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@user_branco.png" />
+                                                <Image url="@../icons/user_branco.png" />
                                              </image>
                                           </ImageView>
                                           <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="PARTICIPANTS">
@@ -164,7 +164,7 @@
                                        <children>
                                           <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
                                              <image>
-                                                <Image url="@logout_white.png" />
+                                                <Image url="@../icons/logout_white.png" />
                                              </image>
                                           </ImageView>
                                           <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="LOGOUT">
