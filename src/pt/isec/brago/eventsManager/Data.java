@@ -293,7 +293,7 @@ public class Data {
         }
     }
 
-    public List<Event> getAttendanceRecords(String eventName, String day, String startDate, String endDate, boolean admin) {
+    public List<Event> getAttendanceRecords(String eventName, String day, String startDate, String endDate, boolean admin, User loggedUser) {
         List<Event> attendanceRecords = new ArrayList<>();
         if(!admin) {
             try {
@@ -307,6 +307,7 @@ public class Data {
                 if (day != null && !day.isEmpty()) queryBuilder.append("AND E.DATE = ? ");
                 if (startDate != null && !startDate.isEmpty()) queryBuilder.append("AND E.DATE >= ? ");
                 if (endDate != null && !endDate.isEmpty()) queryBuilder.append("AND E.DATE <= ? ");
+                queryBuilder.append("AND U.EMAIL = ?");
 
                 try (PreparedStatement preparedStatement = connection.prepareStatement(queryBuilder.toString())) {
                     int parameterIndex = 1;
@@ -315,6 +316,7 @@ public class Data {
                     if (day != null && !day.isEmpty()) preparedStatement.setString(parameterIndex++, day);
                     if (startDate != null && !startDate.isEmpty()) preparedStatement.setString(parameterIndex++, startDate);
                     if (endDate != null && !endDate.isEmpty()) preparedStatement.setString(parameterIndex, endDate);
+                    preparedStatement.setString(parameterIndex, loggedUser.getEmail());
 
                     try (ResultSet resultSet = preparedStatement.executeQuery()) {
                         while (resultSet.next()) {

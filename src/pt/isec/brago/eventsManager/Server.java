@@ -374,7 +374,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                events = server.data.getAttendanceRecords(parameter, null, null, null, false);
+                                events = server.data.getAttendanceRecords(parameter, null, null, null, false, loggedUser);
                                 if (events != null && !events.isEmpty()) {
                                     for (Event e : events) { pout.println(e.toString()); }
                                 }
@@ -386,7 +386,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                events = server.data.getAttendanceRecords(null, parameter,null, null, false);
+                                events = server.data.getAttendanceRecords(null, parameter,null, null, false, loggedUser);
                                 if (events != null && !events.isEmpty()) {
                                     for (Event e : events) { pout.println(e.toString()); }
                                 }
@@ -400,7 +400,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             String secondParameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                events = server.data.getAttendanceRecords(null, null, parameter, secondParameter, false);
+                                events = server.data.getAttendanceRecords(null, null, parameter, secondParameter, false, loggedUser);
                                 if (events != null && !events.isEmpty()) {
                                     for (Event e : events) { pout.println(e.toString()); }
                                 }
@@ -587,7 +587,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                events = server.data.getAttendanceRecords(parameter, null, null, null, true);
+                                events = server.data.getAttendanceRecords(parameter, null, null, null, true, loggedUser);
                                 if (events != null && !events.isEmpty()) {
                                     for (Event e : events) { pout.println(e.toString()); }
                                 }
@@ -599,7 +599,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             parameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                events = server.data.getAttendanceRecords(null, parameter, null, null, true);
+                                events = server.data.getAttendanceRecords(null, parameter, null, null, true, loggedUser);
                                 if (events != null && !events.isEmpty()) {
                                     for (Event e : events) { pout.println(e.toString()); }
                                 }
@@ -613,7 +613,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             String secondParameter = bin.readLine();
                             try {
                                 databaseLock.lock();
-                                events = server.data.getAttendanceRecords(null, null, parameter, secondParameter, true);
+                                events = server.data.getAttendanceRecords(null, null, parameter, secondParameter, true, loggedUser);
                                 if (events != null && !events.isEmpty()) {
                                     for (Event e : events) { pout.println(e.toString()); }
                                 }
