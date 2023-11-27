@@ -237,8 +237,13 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     pout.println("Password: ");
                     password = bin.readLine();
 
-                    pout.println("NIF: ");
-                    NIF = Integer.parseInt(bin.readLine());
+                    try {
+                        pout.println("NIF: ");
+                        NIF = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid NIF");
+                        break;
+                    }
 
                     User newUser = new User(name, NIF, email, password);
                     try {
@@ -320,8 +325,14 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                             } finally {databaseLock.unlock();}
                             break;
                         case "4":
-                            pout.println("Enter new NIF: ");
-                            int newNIF = Integer.parseInt(bin.readLine());
+                            int newNIF;
+                            try {
+                                pout.println("Enter new NIF: ");
+                                newNIF = Integer.parseInt(bin.readLine());
+                            } catch (NumberFormatException e) {
+                                pout.println("Invalid NIF");
+                                break;
+                            }
                             try {
                                 databaseLock.lock();
                                 if (server.data.changeNIF(loggedUser, newNIF)) {
@@ -446,23 +457,33 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     String date = bin.readLine();
                     pout.println("Start Time (HOUR:MINUTE): ");
                     String startTime = bin.readLine();
-                    pout.println("End Time (HOUR:MINUTE): ");
+                    pout.println("Duration (minutes): ");
                     String endTime = bin.readLine();
-                    try {
-                        databaseLock.lock();
-                        Event newEvent = new Event(eventName, local, date, startTime, endTime);
-                        if(server.data.createEvent(newEvent)) {
-                            pout.println("Event created successfully");
-                            server.notifyNewEvent(newEvent);
-                            server.data.updateVersion();
-                            server.sendHeartBeat();
-                        }
-                        else pout.println("There was an error creating the event");
-                    } finally {databaseLock.unlock();}
+
+                    if (eventName.isEmpty()|| local.isEmpty() || date.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
+                        pout.println("Invalid input. All fields must be provided.");
+                    }
+                    else {
+                        try {
+                            databaseLock.lock();
+                            Event newEvent = new Event(eventName, local, date, startTime, endTime);
+                            if (server.data.createEvent(newEvent)) {
+                                pout.println("Event created successfully");
+                                server.notifyNewEvent(newEvent);
+                                server.data.updateVersion();
+                                server.sendHeartBeat();
+                            }
+                        } finally {databaseLock.unlock();}
+                    }
                     break;
                 case "2":
                     pout.println("Enter event ID: ");
-                    eventID = Integer.parseInt(bin.readLine());
+                    try {
+                        eventID = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid event ID");
+                        break;
+                    }
                     if(server.data.checkIfEventCanBeEdited(eventID)) {
                         pout.println("This event already has participants. Cannot be edited");
                         break;
@@ -557,8 +578,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     break;
                 case "3":
                     pout.println("Enter event ID: ");
-                    eventID = Integer.parseInt(bin.readLine());
-
+                    try  {
+                        eventID = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid event ID");
+                        break;
+                    }
                     try {
                         databaseLock.lock();
                         if (server.data.checkIfEventCanBeEdited(eventID)) {
@@ -631,10 +656,21 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     }
                     break;
                 case "5":
-                    pout.println("Enter event ID: ");
-                    eventID = Integer.parseInt(bin.readLine());
-                    pout.println("Enter code duration (minutes): ");
-                    int codeDuration = Integer.parseInt(bin.readLine());
+                    int codeDuration;
+                    try {
+                        pout.println("Enter event ID: ");
+                        eventID = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid event ID");
+                        break;
+                    }
+                    try {
+                        pout.println("Enter code duration (minutes): ");
+                        codeDuration = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid code duration");
+                        break;
+                    }
                     try {
                         databaseLock.lock();
                         String generatedCode = server.generateCode();
@@ -649,7 +685,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     break;
                 case "6":
                     pout.println("Enter event ID: ");
-                    eventID = Integer.parseInt(bin.readLine());
+                    try {
+                        eventID = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid event ID");
+                        break;
+                    }
                     try {
                         databaseLock.lock();
                         users = server.data.getRecords(eventID);
@@ -687,7 +728,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     break;
                 case "10":
                     pout.println("Enter event ID: ");
-                    eventID = Integer.parseInt(bin.readLine());
+                    try {
+                        eventID = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid event ID");
+                        break;
+                    }
                     pout.println("Enter user email: ");
                     parameter = bin.readLine();
                     try {
@@ -704,7 +750,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     break;
                 case "11":
                     pout.println("Enter event ID: ");
-                    eventID = Integer.parseInt(bin.readLine());
+                    try {
+                        eventID = Integer.parseInt(bin.readLine());
+                    } catch (NumberFormatException e) {
+                        pout.println("Invalid event ID");
+                        break;
+                    }
                     pout.println("Enter user email: ");
                     parameter = bin.readLine();
                     try {
