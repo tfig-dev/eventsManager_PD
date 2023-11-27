@@ -94,12 +94,14 @@ public class Data {
 
             stmt.close();
         } catch (Exception e) {
-            System.err.println( e.getClass().getName() + ": " + e.getMessage() );
+            System.err.println( e.getClass().getName() + ": " + e.getMessage());
             System.exit(0);
         }
     }
 
     public User authenticate(String email1, String password1) {
+        if(email1 == null || password1 == null) return null;
+
         String query = "SELECT * FROM USER WHERE EMAIL = ? AND PASSWORD = ?";
 
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -124,6 +126,8 @@ public class Data {
     }
 
     public boolean registerUser(User newUser) {
+        if(newUser == null) return false;
+
         String query = "INSERT INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) " +
                 "SELECT ?, ?, ?, ?, ? " +
                 "WHERE NOT EXISTS (SELECT 1 FROM USER WHERE EMAIL = ?)";
@@ -181,6 +185,8 @@ public class Data {
     }
 
     private boolean updateField(String userEmail, String newValue, String selectSql, String updateSql) {
+        if (newValue == null || newValue.isEmpty()) return false;
+
         try {
             if (selectSql != null) {
                 try (PreparedStatement selectStatement = connection.prepareStatement(selectSql)) {
@@ -211,6 +217,10 @@ public class Data {
     }
 
     public boolean updateCode(int eventID, int minutes, String generatedCode) {
+        if (minutes <= 0) return false;
+        if (generatedCode == null || generatedCode.isEmpty()) return false;
+        if (eventID <= 0) return false;
+
         String selectQuery = "SELECT * FROM EVENT WHERE ID = ?";
         try (PreparedStatement selectStatement = connection.prepareStatement(selectQuery)) {
             selectStatement.setInt(1, eventID);
@@ -240,6 +250,9 @@ public class Data {
     }
 
     public String checkEvent(String eventCode, User loggedUser) {
+        if (eventCode == null || eventCode.isEmpty()) return "error";
+        if (loggedUser == null) return "error";
+
         try {
             String selectEventQuery = "SELECT * FROM EVENT WHERE CODE = ?";
             try (PreparedStatement selectEventStatement = connection.prepareStatement(selectEventQuery)) {
@@ -278,6 +291,8 @@ public class Data {
     }
 
     public boolean createEvent(Event event) {
+        if (event == null) return false;
+
         String insertEventSql = "INSERT INTO EVENT (NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES (?, ?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(insertEventSql)) {
             preparedStatement.setString(1, event.getName());
@@ -294,6 +309,9 @@ public class Data {
     }
 
     public List<Event> getAttendanceRecords(String eventName, String day, String startDate, String endDate, boolean admin, User loggedUser) {
+        if (eventName == null && day == null && startDate == null && endDate == null) return new ArrayList<>();
+        if (loggedUser == null) return new ArrayList<>();
+
         List<Event> attendanceRecords = new ArrayList<>();
         if(!admin) {
             try {
@@ -425,6 +443,9 @@ public class Data {
     }
 
     public boolean editEvent(int eventID, String name, String local, String date, String startHour, String endHour) {
+        if (eventID <= 0) return false;
+        if (name != null && name.isEmpty() && local != null && local.isEmpty() && date != null && date.isEmpty() && startHour != null && startHour.isEmpty() && endHour != null && endHour.isEmpty()) return false;
+
         try {
             StringBuilder queryBuilder = new StringBuilder();
             queryBuilder.append("UPDATE EVENT SET");
@@ -458,6 +479,7 @@ public class Data {
     }
 
     public boolean deleteEvent(int eventID) {
+        if (eventID <= 0) return false;
         String query = "DELETE FROM EVENT WHERE ID = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, eventID);
@@ -470,6 +492,7 @@ public class Data {
     }
 
     public List<User> getRecords(int eventID) {
+        if (eventID <= 0) return new ArrayList<>();
         List<User> records = new ArrayList<>();
         String query = "SELECT U.* FROM EVENT_PARTICIPANT EP " +
                 "INNER JOIN USER U ON EP.USER_EMAIL = U.EMAIL " +
@@ -518,6 +541,7 @@ public class Data {
     }
 
     public List<Event> getAttendanceEmailRecords(String parameter) {
+        if (parameter == null || parameter.isEmpty()) return new ArrayList<>();
         List<Event> attendanceRecords = new ArrayList<>();
 
         String query = "SELECT * FROM EVENT_PARTICIPANT EP " +

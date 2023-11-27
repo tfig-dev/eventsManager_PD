@@ -159,6 +159,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     handleInput(receivedMsg, bin, pout);
                     handleMenu(pout);
                 }
+            } catch (SocketTimeoutException e) {
+                System.err.println("Client timed out: " + clientSocket.getInetAddress().getHostAddress() + ":" + clientSocket.getPort());
             } catch (IOException e) {
                 System.err.println("Communication error with the client: " + e);
             } finally {
