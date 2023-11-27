@@ -574,6 +574,8 @@ public class Data {
     }
 
     public boolean checkIfUserExists(String parameter) {
+        if (parameter == null || parameter.isEmpty()) return false;
+
         String query = "SELECT * FROM USER WHERE EMAIL = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, parameter);

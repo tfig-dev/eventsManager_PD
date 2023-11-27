@@ -457,7 +457,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     String date = bin.readLine();
                     pout.println("Start Time (HOUR:MINUTE): ");
                     String startTime = bin.readLine();
-                    pout.println("Duration (minutes): ");
+                    pout.println("End Time (HOUR:MINUTE): ");
                     String endTime = bin.readLine();
 
                     if (eventName.isEmpty()|| local.isEmpty() || date.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
