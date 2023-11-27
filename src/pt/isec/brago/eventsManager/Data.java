@@ -72,10 +72,14 @@ public class Data {
             String insertRow = "INSERT INTO VERSION (VERSION) SELECT 0 WHERE NOT EXISTS (SELECT 1 FROM VERSION)";
             stmt.executeUpdate(insertRow);
 
-            //APAGAR ISTO DEPOIS, APENAS PARA TESTES
+            String insertAdmin = "INSERT OR IGNORE INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES " +
+                    "('admin', 'admin', 'admin', 123456789, 1)";
+            stmt.executeUpdate(insertAdmin);
+
+            /*
             String insertDefaultEvents = "INSERT OR IGNORE INTO EVENT (ID, NAME, LOCAL, DATE, BEGINHOUR, ENDHOUR) VALUES " +
                     "(1, 'Ze dos leitoes', 'ISEC', '2023-11-19', '15:30', '19:30'), " +
-                    "(2, 'Maria das vacas', 'ESEC', '2023-11-20', '16:30', '20:30')";
+                    "(2, 'Maria das couves', 'ESEC', '2023-11-20', '16:30', '20:30')";
             stmt.executeUpdate(insertDefaultEvents);
 
             String insertDefaultUsers = "INSERT OR IGNORE INTO USER (EMAIL, NAME, PASSWORD, NIF, ISADMIN) VALUES " +
@@ -90,7 +94,7 @@ public class Data {
                     "(2, 'user@isec.pt'), " +
                     "(1, 'user2@isec.pt')";
             stmt.executeUpdate(insertDefaultParticipations);
-            //FIM
+            */
 
             stmt.close();
         } catch (Exception e) {
