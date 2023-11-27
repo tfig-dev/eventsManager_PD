@@ -226,25 +226,25 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
             System.exit(1);
         }
 
+        TerminalData.clearScreen();
+        System.out.println("Observer starting...");
+
         String databaseDirectory = args[0];
         String databaseName = args[1];
 
         try {
             Path dir = Paths.get(databaseDirectory);
             Files.createDirectories(dir);
-            System.out.println("Folder created successfully: " + dir);
+
+            String[] files = dir.toFile().list();
+            if (files != null && files.length > 0) {
+                System.out.println(databaseDirectory + " is not empty.");
+                System.in.read();
+                return;
+            }
         } catch (Exception e) {
             System.err.println("Error creating folder: " + e.getMessage());
         }
-
-        /* UNCOMMENT THIS AFTER
-        String[] files = directory.list();
-        if (files != null && files.length > 0) {
-            System.out.println(databaseDirectory + "is not empty.");
-            return;
-        }
-
-         */
 
         Observer observer = new Observer();
 
@@ -265,8 +265,6 @@ public class Observer extends UnicastRemoteObject implements ObserverInterface {
         receiverThread.start();
 
         System.out.println("Observer registado no servidor");
-
-
     }
 
     static class heartbeatHandler implements Runnable {

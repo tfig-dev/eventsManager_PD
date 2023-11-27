@@ -40,21 +40,22 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         Server server;
 
         if (args.length != 4) {
-            System.out.println("Sintaxe: java Servidor listeningPort pathBD rmiServerName rmiServerPort");
+            System.out.println("Sintaxe: java Servidor listeningPort pathBD rmiServiceName rmiServerPort");
             return;
         }
+
+        TerminalData.clearScreen();
+        System.out.println("Servidor inicializado");
 
         try {
             listeningPort = Integer.parseInt(args[0]);
             pathBD = args[1];
             rmiServerName = args[2];
             rmiServerPort = Integer.parseInt(args[3]);
-
-
             LocateRegistry.createRegistry(rmiServerPort);
             server = new Server(pathBD);
             Naming.bind("rmi://localhost/" + rmiServerName, server);
-            System.out.println("Servidor RMI iniciado");
+            System.out.println("Servico RMI iniciado");
         } catch (NumberFormatException e) {
             System.out.println("O porto de escuta deve ser um inteiro positivo.");
             return;
@@ -63,7 +64,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         }
 
         try (ServerSocket serverSocket = new ServerSocket(listeningPort)) {
-            System.out.println("Servidor iniciado e á espera de conexões...");
+            System.out.println("Servidor a espera de conexoes...");
 
             server.HeartBeat = new Heartbeat(rmiServerPort, server.data.getVersion(), rmiServerName);
             Thread heartbeat = new Thread(new heartBeat(server));
@@ -128,12 +129,12 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         private List<User> users = new ArrayList<>();
         private final ReentrantLock databaseLock;
 
-        public ClientHandler(Socket clientSocket, Server server) /*throws SocketException*/ {
+        public ClientHandler(Socket clientSocket, Server server) throws SocketException {
             this.clientSocket = clientSocket;
             this.server = server;
             this.databaseLock = server.databaseLock;
             this.loggedUser = null;
-            //this.clientSocket.setSoTimeout(10000); POR ENQUANTO NAO METER ISTO
+            this.clientSocket.setSoTimeout(10000);
         }
 
         private void handleInput(String userInput, BufferedReader bin, PrintStream pout) throws IOException {
@@ -789,7 +790,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             databaseLock.lock();
             String executedPATH = System.getProperty("user.dir");
             File parentPATH = new File(executedPATH).getParentFile();
-            System.out.println(parentPATH);
 
             try (FileInputStream fileInputStream = new FileInputStream(parentPATH+"/src/pt/isec/brago/eventsManager/datafiles/database.db")) {
                 byte[] databaseContent = new byte[(int) fileInputStream.available()];

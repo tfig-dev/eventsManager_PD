@@ -6,6 +6,7 @@ import java.util.Scanner;
 
 public class Client {
     private static boolean exit = false;
+
     public static void main(String[] args) {
         InetAddress serverAddr;
         int serverPort;
@@ -17,6 +18,7 @@ public class Client {
         }
 
         try {
+            TerminalData.clearScreen();
             serverAddr = InetAddress.getByName(args[0]);
             serverPort = Integer.parseInt(args[1]);
 
@@ -34,7 +36,7 @@ public class Client {
                         System.out.println("Error reading user input. Please try again.");
                         continue;
                     }
-                    clearScreen();
+                    TerminalData.clearScreen();
                     pout.println(userInput);
                 }
                 responseThread.join();
@@ -73,19 +75,6 @@ public class Client {
             } catch (IOException e) {
                 System.out.println("Error handling server response: " + e.getMessage());
             }
-        }
-    }
-
-    public static void clearScreen() {
-        try {
-            if (System.getProperty("os.name").contains("Windows")) {
-                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
-            } else {
-                System.out.print("\033[H\033[2J");
-                System.out.flush();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 }
