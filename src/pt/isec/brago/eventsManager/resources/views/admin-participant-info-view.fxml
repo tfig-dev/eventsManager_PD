@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Line?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<Pane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/20.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox maxHeight="400.0" maxWidth="600.0" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0">
+         <children>
+            <Pane maxHeight="70.0" maxWidth="600.0" minHeight="70.0" minWidth="600.0" prefHeight="70.0" prefWidth="600.0">
+               <children>
+                  <HBox alignment="CENTER_LEFT" maxHeight="70.0" maxWidth="600.0" minHeight="70.0" minWidth="600.0" prefHeight="70.0" prefWidth="600.0">
+                     <children>
+                        <ImageView fitHeight="100.0" fitWidth="40.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../icons/ipc_logo_preto.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets left="20.0" right="19.0" />
+                           </HBox.margin>
+                        </ImageView>
+                        <Line endY="50.0" startY="-20.0" strokeWidth="0.2" />
+                        <Text fill="#2f2f2f" strokeType="OUTSIDE" strokeWidth="0.0" text="Hi, Tiago">
+                           <HBox.margin>
+                              <Insets left="30.0" />
+                           </HBox.margin>
+                           <font>
+                              <Font size="35.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </HBox>
+                  <Line endX="600.0" endY="70.0" startY="70.0" strokeWidth="0.2" />
+               </children>
+            </Pane>
+            <Pane maxHeight="330.0" maxWidth="600.0" minHeight="330.0" minWidth="600.0" prefHeight="330.0" prefWidth="600.0">
+               <children>
+                  <HBox prefHeight="100.0" prefWidth="200.0">
+                     <children>
+                        <VBox alignment="CENTER" maxHeight="330.0" maxWidth="80.0" minHeight="330.0" minWidth="80.0" prefHeight="330.0" prefWidth="80.0">
+                           <children>
+                              <Pane maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0" style="-fx-background-color: #2F2F2F;">
+                                 <children>
+                                    <VBox alignment="CENTER" maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0">
+                                       <children>
+                                          <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../icons/add-post_branco.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="CREATE">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="8.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </Pane>
+                              <Pane maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0" style="-fx-background-color: #2f2f2f;">
+                                 <children>
+                                    <VBox alignment="CENTER" maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0">
+                                       <children>
+                                          <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../icons/settings_white.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="EDIT">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="8.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </Pane>
+                              <Pane maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0" style="-fx-background-color: #2f2f2f;">
+                                 <children>
+                                    <VBox alignment="CENTER" maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0">
+                                       <children>
+                                          <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../icons/view_white.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="VIEW">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="8.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </Pane>
+                              <Pane maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0" style="-fx-background-color: #2f2f2f;">
+                                 <children>
+                                    <VBox alignment="CENTER" maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0">
+                                       <children>
+                                          <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../icons/event_white.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="EVENT">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="8.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </Pane>
+                              <Pane maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0" style="-fx-background-color: #e1e1e1;">
+                                 <children>
+                                    <VBox alignment="CENTER" maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0">
+                                       <children>
+                                          <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../icons/user_preto.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Text fill="#2f2f2f" strokeType="OUTSIDE" strokeWidth="0.0" text="PARTICIPANTS">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="8.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </Pane>
+                              <Pane maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0" style="-fx-background-color: #2F2F2F;">
+                                 <children>
+                                    <VBox alignment="CENTER" maxHeight="55.0" maxWidth="80.0" minHeight="55.0" minWidth="80.0" prefHeight="55.0" prefWidth="80.0">
+                                       <children>
+                                          <ImageView fitHeight="150.0" fitWidth="25.0" pickOnBounds="true" preserveRatio="true">
+                                             <image>
+                                                <Image url="@../icons/logout_white.png" />
+                                             </image>
+                                          </ImageView>
+                                          <Text fill="WHITE" strokeType="OUTSIDE" strokeWidth="0.0" text="LOGOUT">
+                                             <VBox.margin>
+                                                <Insets top="10.0" />
+                                             </VBox.margin>
+                                             <font>
+                                                <Font size="8.0" />
+                                             </font>
+                                          </Text>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                              </Pane>
+                           </children>
+                        </VBox>
+                        <Pane maxHeight="330.0" maxWidth="520.0" minHeight="330.0" minWidth="520.0" prefHeight="330.0" prefWidth="520.0" style="-fx-background-color: #E1E1E1;">
+                           <children>
+                              <VBox alignment="TOP_CENTER" maxHeight="330.0" maxWidth="520.0" minHeight="330.0" minWidth="520.0" prefHeight="330.0" prefWidth="520.0">
+                                 <children>
+                                    <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
+                                       <children>
+                                          <VBox alignment="CENTER" maxHeight="100.0" maxWidth="158.0" minHeight="100.0" minWidth="158.0" prefHeight="100.0" prefWidth="158.0" spacing="10.0">
+                                             <children>
+                                                <Label text="PARTICIPANT NAME" />
+                                                <TextField maxHeight="20.0" maxWidth="120.0" minHeight="20.0" minWidth="120.0" prefHeight="20.0" prefWidth="120.0" />
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                    <Line endX="600.0" startX="80.0" strokeWidth="0.2" />
+                                    <TableView maxHeight="140.0" maxWidth="460.0" minHeight="140.0" minWidth="460.0" prefHeight="140.0" prefWidth="460.0">
+                                       <columns>
+                                          <TableColumn prefWidth="75.0" text="ID" />
+                                          <TableColumn prefWidth="75.0" text="EVENT" />
+                                       </columns>
+                                       <VBox.margin>
+                                          <Insets top="20.0" />
+                                       </VBox.margin>
+                                    </TableView>
+                                    <Button mnemonicParsing="false" text="EXPORT">
+                                       <VBox.margin>
+                                          <Insets top="20.0" />
+                                       </VBox.margin>
+                                    </Button>
+                                 </children>
+                              </VBox>
+                           </children>
+                        </Pane>
+                     </children>
+                  </HBox>
+               </children>
+            </Pane>
+         </children>
+      </VBox>
+   </children>
+</Pane>
